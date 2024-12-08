@@ -1,5 +1,10 @@
 # pi_at_home
-This is my productionized deployment environment for my real world AI robot policies, and a place to create training data for reinforcement learning and imitation learning.
+This is my productionized deployment environment for my real world AI robot policies, 
+and a place to create training data for reinforcement learning and imitation learning.
+
+It's also the first project I've built using [create-ros-app](https://github.com/urbanmachine/create-ros-app),
+a template I'm developing to make it easier for anyone to create and deploy production 
+ready ROS2 applications.
 
 ---
 [![Test Status](https://github.com/apockill/pi_at_home/workflows/test.yaml/badge.svg)](https://github.com/apockill/pi_at_home/actions?query=workflow%3ATest)
