@@ -5,7 +5,8 @@ from pathlib import Path
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
-# Import the forklift URDF module so it register itself with the URDFConstants
+# Import the URDF module so it register all available URDFs with the URDFConstants
+from myarm_ai import urdfs  # noqa: F401
 from node_helpers import launching
 from node_helpers.parameters import ParameterLoader
 from pydantic import BaseModel
