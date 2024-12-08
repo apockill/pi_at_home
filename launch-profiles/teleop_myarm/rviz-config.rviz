@@ -3,9 +3,7 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /InteractiveMarkers1
-        - /InteractiveTransforms1
+      Expanded: ~
       Splitter Ratio: 0.5
     Tree Height: 1108
   - Class: rviz_common/Selection
@@ -57,7 +55,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /example_node_namespace/urdf_0/robot_description
+        Value: /myarm_m/urdf_0/robot_description
       Enabled: true
       Links:
         All Links Enabled: true
@@ -65,17 +63,47 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        example_node_namespace.forklift_body:
+        myarm_m.base:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        example_node_namespace.forks:
+        myarm_m.gripper:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        example_node_namespace.forks_origin:
+        myarm_m.gripper_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_m.gripper_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_m.link1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_m.link2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_m.link3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_m.link4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_m.link5:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -83,20 +111,82 @@ Visualization Manager:
       Mass Properties:
         Inertia: false
         Mass: false
-      Name: ExampleURDF
+      Name: MyArmM
       TF Prefix: ""
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Class: rviz_default_plugins/InteractiveMarkers
-      Enable Transparency: true
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /myarm_c/urdf_0/robot_description
       Enabled: true
-      Interactive Markers Namespace: ""
-      Name: InteractiveMarkers
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: false
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        myarm_c.base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_c.gripper:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_c.gripper_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_c.gripper_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_c.link1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_c.link2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_c.link3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_c.link4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        myarm_c.link5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Mass Properties:
+        Inertia: false
+        Mass: false
+      Name: MyArmC
+      TF Prefix: ""
+      Update Interval: 0
       Value: true
+      Visual Enabled: true
     - Class: rviz_default_plugins/InteractiveMarkers
       Enable Transparency: true
       Enabled: true
@@ -106,6 +196,22 @@ Visualization Manager:
       Show Descriptions: true
       Show Visual Aids: false
       Value: true
+    - Class: rviz_default_plugins/TF
+      Enabled: false
+      Filter (blacklist): ""
+      Filter (whitelist): ""
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 0.10000000149011612
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        {}
+      Update Interval: 0
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -152,25 +258,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 8.649819374084473
+      Distance: 1.7068512439727783
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.4261273145675659
-        Y: -0.3684071898460388
-        Z: 0.5727261900901794
+        X: 0.06433169543743134
+        Y: -0.22786517441272736
+        Z: -0.13782760500907898
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5403984189033508
+      Pitch: 0.4803987741470337
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.0753980875015259
+      Yaw: 2.0603976249694824
     Saved: ~
 Window Geometry:
   Displays:
@@ -178,7 +284,7 @@ Window Geometry:
   Height: 1331
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001c5000004ddfc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b000004dd000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000499fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b00000499000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009f40000003efc0100000002fb0000000800540069006d00650000000000000009f40000025300fffffffb0000000800540069006d0065010000000000000450000000000000000000000829000004dd00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000031b000004ddfc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b000004dd000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000499fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003b00000499000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009f40000003efc0100000002fb0000000800540069006d00650000000000000009f40000025300fffffffb0000000800540069006d00650100000000000004500000000000000000000006d3000004dd00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
