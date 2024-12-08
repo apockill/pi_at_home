@@ -22,6 +22,7 @@ class ForkliftFrames(NamedTuple):
     FORKS_ORIGIN: str = "forks_origin"
     FORKS: str = "forks"
 
+
 ForkliftURDF = URDFConstants[ForkliftJoints, ForkliftFrames](
     from_package="node_helpers",
     registration_name="forklift",
