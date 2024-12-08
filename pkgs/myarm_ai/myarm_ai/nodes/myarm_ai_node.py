@@ -24,8 +24,8 @@ class MyArmNode(HelpfulNode):
             JointState, "desired_joint_states", qos_profile_services_default
         )
 
-
     def on_publish_joints(self) -> None:
         pass
+
 
 main = create_spin_function(MyArmNode)
