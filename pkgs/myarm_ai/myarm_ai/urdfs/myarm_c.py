@@ -13,7 +13,7 @@ class MyArmCJoints(NamedTuple):
     JOINT_5: str = "joint5"
     JOINT_6: str = "joint6"
 
-    GRIPPER = "gripper"
+    GRIPPER: str = "gripper"
 
 
 class MyArmMFrames(NamedTuple):
