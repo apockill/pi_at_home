@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Installs APT packages with the recommended image-building boilerplate.
+#
+# Usage: install-packages {packages}
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+with-package-list apt-get install --yes --no-install-recommends "$@"

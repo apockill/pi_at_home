@@ -1,0 +1,25 @@
+{
+  "template": "https://github.com/UrbanMachine/create-ros-app.git",
+  "commit": "47539d784f54289f5b2140566a7bde10e24e9018",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "email": "apocthiel@gmail.com",
+      "github_username_or_org": "apockill",
+      "dockerhub_username_or_org": "apockill",
+      "project_name": "pi_at_home",
+      "__project_name_slug": "pi_at_home",
+      "project_description": "This is my productionized deployment environment for my real world AI robot policies, and a place to create training data for reinforcement learning and imitation learning.",
+      "version": "0.1.0",
+      "license": "MIT",
+      "example_package_name": "myarm_ai",
+      "example_package_description": "This is my MyArm package for controlling the MyArm M&C elephant robotics arms using ROS2",
+      "example_node_name": "MyArmNode",
+      "example_launch_profile": "teleop_myarm",
+      "example_package_version": "0.1.0",
+      "__example_messages_package_name": "myarm_ai_msgs",
+      "_template": "https://github.com/UrbanMachine/create-ros-app.git"
+    }
+  },
+  "directory": null
+}

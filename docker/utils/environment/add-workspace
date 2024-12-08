@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Adds a ROS workspace to a stack of workspaces that will be entered in order
+# by the enter-workspaces command. When introducing a new ROS package to a
+# container, you likely will need to run this command in order to activate that
+# package's workspace.
+#
+# Usage:
+#     add-workspace {workspace activation script}
+#
+# Examples:
+#     add-workspace /opt/ros/foxy/setup.bash
+#     add-workspace install/setup.bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+config_path=/etc/pi_at_home
+mkdir -p "${config_path}"
+workspaces_file="${config_path}/workspaces.txt"
+
+echo "${1}" >> "${workspaces_file}"
+
+echo "Added ${1} to workspaces!" >&2

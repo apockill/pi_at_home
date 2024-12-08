@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Copies the build cache from a build operation into `/cache`, where it will be
+# saved as a cache volume by Docker for the next build.
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+# Makes `*` include hidden files
+shopt -s dotglob
+
+# This directory is mounted by the Dockerfile and is unique to each project.
+BUILD_CACHE=/colcon-build-cache/pi_at_home/
+
+if [[ ! -d "${BUILD_CACHE}" ]]; then
+  echo "Build cache directory not mounted" >&2
+  exit 1
+fi
+
+rm -rf ${BUILD_CACHE}*
+cp -r /robot/build/. ${BUILD_CACHE}.

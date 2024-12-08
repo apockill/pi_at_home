@@ -1,0 +1,24 @@
+* text=auto
+
+*.pcd filter=lfs diff=lfs merge=lfs -binary
+*.png filter=lfs diff=lfs merge=lfs -binary
+*.jpg filter=lfs diff=lfs merge=lfs -binary
+*.jpeg filter=lfs diff=lfs merge=lfs -binary
+*.svg filter=lfs diff=lfs merge=lfs -binary
+*.mkv filter=lfs diff=lfs merge=lfs -binary
+*.npy filter=lfs diff=lfs merge=lfs -binary
+*.stl filter=lfs diff=lfs merge=lfs -binary
+*.STL filter=lfs diff=lfs merge=lfs -binary
+*.urdf filter=lfs diff=lfs merge=lfs -binary
+*.ply filter=lfs diff=lfs merge=lfs -binary
+*.pickle filter=lfs diff=lfs merge=lfs -binary
+*.msgbytes filter=lfs diff=lfs merge=lfs -binary
+*.pt filter=lfs diff=lfs merge=lfs -binary
+*.mp3 filter=lfs diff=lfs merge=lfs -binary
+*.mp4 filter=lfs diff=lfs merge=lfs -binary
+*.ogg filter=lfs diff=lfs merge=lfs -binary
+# ReadTheDocs does not support Git LFS
+docs/** !filter !diff !merge binary
+
+# Makes images buildable on Windows
+docker/** text eol=lf

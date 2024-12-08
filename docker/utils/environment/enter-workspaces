@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Runs the provided command after entering the workspaces provided by calls to
+# add-workspace. This is intended to be used in Docker ENTRYPOINT definitions.
+#
+# Usage:
+#     enter-workspaces {command(s)}
+#
+# Examples:
+#     enter-workspaces ros2 run my_package my_node
+
+set -o errexit
+set -o pipefail
+# The nounset check is explicitly not enabled because it breaks workspace
+# scripts
+
+workspaces_file="/etc/pi_at_home/workspaces.txt"
+if [[ ! -f "${workspaces_file}" ]]
+then
+  echo "File ${workspaces_file} does not exist! Run add-workspace to add workspaces to this file" 1>&2
+  exit 1
+fi
+
+# Enter into the workspaces
+while read -r workspace
+do
+  # shellcheck disable=SC1090
+  source "${workspace}"
+done < "${workspaces_file}"
+
+if [[ "$#" -gt 0 ]]
+then
+  # Run the command provided
+  exec "$@"
+else
+  # Default to entering a shell
+  exec "${SHELL}"
+fi

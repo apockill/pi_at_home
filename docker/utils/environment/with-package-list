@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Updates the package list, runs the provided command, and clears the package
+# list. This ensures that the list is always up-to-date, and the resulting
+# Docker image is small.
+#
+# Usage: with-package-list {command}
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+apt-get update
+"$@"
+rm -rf /var/lib/apt/lists/*

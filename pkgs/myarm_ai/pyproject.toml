@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "myarm_ai"
+version = "0.1.0"
+description = "This is my MyArm package for controlling the MyArm M&C elephant robotics arms using ROS2"
+authors = ["apockill <apocthiel@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.12.0,<4.0"
+
+[tool.poetry.scripts]
+# Each entry here will create an executable which can be referenced in launchfiles
+run_MyArmNode = "myarm_ai.nodes.myarm_ai_node:main"
+
+[tool.colcon-poetry-ros.data-files]
+"share/ament_index/resource_index/packages" = ["resource/myarm_ai"]
+"share/myarm_ai" = ["package.xml"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

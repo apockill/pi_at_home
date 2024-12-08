@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# Runs tests in all packages under the `pkgs/ directory.
+# All other arguments are passed to `colcon test`. Some examples below:
+#
+# Usage:
+#   docker/test
+#
+# Examples:
+#   Run all tests on all `pkgs/`
+#   docker/test
+#
+#   Run tests on a specific package (passing flags to `colcon test`)
+#   docker/test --packages-select myarm_ai
+#
+#   Run tests on a specific package with a specific test
+#   docker/test --packages-select myarm_ai --pytest-arg myarm_ai_test/unit/nodes/test_myarm_ai_node.py
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+source docker/_shared.sh
+
+build_images
+enable_display_passthrough
+
+# We don't use `docker compose run ...` for tests, because we don't want to have network
+# mode be 'host' for tests, and we also want to mount in the 'pkgs' directory wholesale,
+# while usually it contains everything _except_ the tests.
+docker run -it \
+  `# Disable GPU to make the testing more similar to the Github Actions environment` \
+  --runtime runc \
+  `# For display passthrough, for tests that have visualization options during dev` \
+  -e DISPLAY="${DISPLAY}" \
+  -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+  `# Tests are excluded from the image, so we need to reintroduce them. This` \
+  `# saves us from having to rebuild ROS packages for test changes.` \
+  -v "$(pwd)/pkgs:/robot/pkgs" \
+  ${BUILT_IMAGE_NAME} \
+  `# Run tests in 'pkgs' with sane logging defaults` \
+  colcon test \
+    --base-paths pkgs \
+    --event-handlers console_direct+ \
+    --executor sequential \
+    --return-code-on-test-failure \
+    "${@}"

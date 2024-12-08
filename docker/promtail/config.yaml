@@ -1,0 +1,119 @@
+# This configures Promtail to scrape logs from all containers with the label
+# "build.apockill.collect-logs=true".
+#
+# It then uses regex to extract the node name from the container name, the node
+# executable from the log, and the log level from the log. It then assigns the
+# log level to a new label "level" and removes the log level from the log itself.
+#
+# Finally, it collapses multiline logs into one block and assigns a "level" label
+# to the log based on the log level extracted from the log.
+#
+# This configuration is used in the docker-compose.yaml file to configure the
+# Promtail service.
+
+# https://grafana.com/docs/loki/latest/clients/promtail/configuration/
+# https://docs.docker.com/engine/api/v1.41/#operation/ContainerList
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    # use docker.sock to filter containers
+    docker_sd_configs:
+      - host: "unix:///var/run/docker.sock"
+        refresh_interval: 15s
+        filters:
+          - name: label
+            # Make sure that all relevant containers have this label
+            values: [ "build.apockill.collect-logs=true" ]
+    # Use the container name to create a loki label
+    relabel_configs:
+      - source_labels: [ '__meta_docker_container_name' ]
+        # Containers created by Swarm look like "/robot_dashboard.1.wp29jaucvp5pneq6zyw9mgwu7". This selects just the
+        # "robot_dashboard" part.
+        regex: '/([^\.]*).*'
+        target_label: 'container'
+
+
+    # Great, at this point, we have logs from all containers along with a "container" label
+    pipeline_stages:
+      # Now, extract the "node_executable" label only from the ros-nodes container
+      - match:
+          selector: '{container=~".*nodes.*"}'
+          stages:
+            # Find the node name by matching [some_node_name-##]
+            - regex: &node_executable_regex
+                expression: '(?i)(?P<open_bracket_1>^\[)(?P<node_executable>[^\]]+-\d+)(?P<close_bracket_1>\] )'
+            - labels:
+                node_executable: ""
+
+            # Remove the [node_name-#] from the log itself (we'll show the label in grafana)
+            # Also removes the space after the bracket
+            - replace:
+                <<: *node_executable_regex
+
+      - regex: &ros2_loglevel_and_timestamp
+          expression: '(?i)(?P<open_bracket_2>\[)(?P<ros2_loglevel>info|warn(?:ing)?|error|debug|traceback|critical)(?P<close_bracket_2>\] )(?P<ros_log_timestamp>\[[+-]?([0-9]*[.])?[0-9]+\] ?)'
+      - labels:
+          ros2_loglevel: ""
+
+      - regex: &node_name_regex
+          # Match at least 1 alphabetical character,
+          # Then match any alphabetecal+numerical+underscore characters
+          # Then at least one period
+          # Then match any alphabetical, numerical, underscore, or period characters
+          # Finally, expect a closing bracket and maybe an opening colon and space.
+          expression: '(?P<open_bracket_3>\[)(?P<node_name>[a-zA-Z].[a-zA-Z0-9_]+\.[a-zA-Z0-9_.]+)(?P<close_bracket_3>\]:? )'
+      - labels:
+          node_name: ""
+
+      # Collapse multiline logs into one multiline block, using regex to detect the first line
+      - multiline:
+          # Matches lines that have certain key words in them, UNLESS they start with
+          # characters that aren't an opening bracket, a space, or nothing.
+          firstline: '(?i)(^|\s|\[)(info|warn(?:ing)?|error|debug|traceback|critical)(\]|:|( \(most recent call last)).*'
+          max_wait_time: 3s
+          max_lines: 500
+
+      # Capture log level from logs that look like "LEVEL:" or "LEVEL: "
+      # Case insensitive. This is for other libraries that don't use the default logger.
+      - regex: &python_logging_loglevel_regex
+          expression: '^(?i)(?P<whitespace>\s*)(?P<python_loglevel>info|warn(?:ing)?|error|debug|traceback|critical):\s?'
+      - labels:
+          python_loglevel:
+
+      # Create a new 'level' label holding the value of either 'python_loglevel' or 'ros2_loglevel'
+      # If no level was extracted, "UNKNOWN" will be used.
+      - template:
+          source: "level"
+          
+          template: "\
+            {{ if .python_loglevel }}{{ .python_loglevel | ToUpper }}\
+            {{ else if .ros2_loglevel }}{{ .ros2_loglevel | ToUpper }}\
+            {{ else }}UNKNOWN\
+            {{ end }}"
+          
+      # Remove "ING" in the 'level', so WARNING -> WARN, DEBUGGING -> DEBUG, etc
+      - replace:
+          source: 'level'
+          expression: ".*(?P<ing>ING)"
+          replace: ''
+      - labels:
+          level:
+
+      # Delete the log level text. If you do this before the templating, templating will fail
+      - replace:
+          <<: *python_logging_loglevel_regex
+      - replace:
+          <<: *node_name_regex
+      - replace:
+          <<: *ros2_loglevel_and_timestamp
+
+      # Drop the 'python_loglevel' and 'ros2_loglevel' labels now that 'level' has been assigned.
+      - labeldrop:
+          - python_loglevel
+          - ros2_loglevel

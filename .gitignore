@@ -1,0 +1,29 @@
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# Colcon
+build/
+install/
+log/
+
+# Python
+*.pyc
+__pycache__/
+
+# Override Files
+*.override.*
+
+# Docker Compose environment configuration
+.env
+
+# Persistent data
+.docker_volumes
+
+# URDF
+*.part
+
+# Dev specific overrides
+*.override.yaml

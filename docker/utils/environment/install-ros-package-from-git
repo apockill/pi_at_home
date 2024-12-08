@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+# Installs ROS packages from a Git repository into the Docker image.
+#
+# This script:
+#  - Requires specifying the repository URL, branch/tag, and the relative path to a pkgs directory.
+#  - Clones the repository to a temporary directory.
+#  - Checks out the specified branch or tag.
+#  - Moves the contents of the given pkgs directory into a new directory (named after the repo) in the current directory.
+#  - Installs dependencies and builds all packages found in that directory.
+#
+# Usage:
+#   install-ros-package-from-git {repository_url} {branch_or_tag} {pkgs_subdir}
+#
+# Example:
+#   install-ros-package-from-git https://github.com/UrbanMachine/example_repo.git main pkgs
+#
+# This might produce a structure like:
+#   current_dir/
+#     example_repo/
+#       some_pkg_A/
+#       some_pkg_B/
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+function usage {
+  echo "Usage: install-ros-package-from-git {repository_url} {branch_or_tag} {pkgs_subdir}" >&2
+  exit 1
+}
+
+function main {
+  if [[ "$#" -ne 3 ]]; then
+    usage
+  fi
+
+  local repo_url="$1"
+  local branch_or_tag="$2"
+  local pkgs_subdir="$3"
+
+  local original_dir
+  original_dir="$(pwd)"
+
+  # Derive the package name from the repo URL
+  local package_name
+  package_name="$(basename "${repo_url}" .git)"
+
+  local dest_dir="${original_dir}/${package_name}"
+  if [[ -d "${dest_dir}" ]]; then
+    echo "Directory ${dest_dir} already exists. Remove it or choose a different repository." >&2
+    exit 1
+  fi
+
+  # Create a temporary directory for cloning
+  local temp_dir
+  temp_dir="$(mktemp -d)"
+
+  # Clone the repository into the temp directory
+  git clone "${repo_url}" "${temp_dir}"
+  cd "${temp_dir}"
+
+  # Checkout the specified branch or tag
+  git checkout "${branch_or_tag}"
+
+  # Verify that the specified pkgs_subdir exists
+  if [[ ! -d "${pkgs_subdir}" ]]; then
+    echo "The specified pkgs_subdir '${pkgs_subdir}' does not exist in the repository." >&2
+    exit 1
+  fi
+
+  # Create the destination directory and move the packages
+  mkdir -p "${dest_dir}"
+  # Move everything from pkgs_subdir into the new directory
+  mv "${pkgs_subdir}"/* "${dest_dir}/"
+
+  # Return to the original directory to install dependencies and build
+  cd "${original_dir}"
+
+  # Install ROS dependencies with rosdep
+  with-package-list rosdep install -i --from-path "${dest_dir}" --rosdistro "${ROS2_DISTRO:-foxy}" -y
+
+  # Install Poetry dependencies for the packages
+  python3 -m colcon_poetry_ros.dependencies.install --base-paths "${dest_dir}"
+
+  # Build the packages using colcon
+  # We use enter-workspaces to ensure all previously added workspaces are sourced.
+  enter-workspaces colcon build --base-paths "${package_name}"
+  add-workspace "${original_dir}/install/setup.bash"
+}
+
+main "$@"

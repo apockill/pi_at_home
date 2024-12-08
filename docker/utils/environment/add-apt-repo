@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# Adds an APT repository to the repository list, allowing packages to be
+# installed from that source.
+#
+# This script handles downloading and installing the repository's GPG key to
+# the proper location. That location is controlled by the provided source
+# entry's "signed-by" field. For example, if the script is executed like this:
+#
+# add-apt-repo 'deb [signed-by=/my/key.gpg] https://coolpackages.com focal main' https://coolpackages.com/key.gpg
+#
+# ... then the key will be downloaded from "https://coolpackages.com/key.gpg"
+# and saved to a file at "/my/key.gpg".
+#
+# Usage:
+#     add-apt-repo {package list line} {URL to GPG key}
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+# Parse the "signed-by" field to figure out where the GPG key should be
+# placed
+signed_by_pattern='signed-by=([[:alnum:]./_-]+)'
+if [[ "${1}" =~ ${signed_by_pattern} ]]
+then
+  key_file=${BASH_REMATCH[1]}
+else
+  echo "The provided source is missing a 'signed-by' field" >&2
+  exit 1
+fi
+
+dependencies=(ca-certificates curl gnupg)
+if ! dpkg --list "${dependencies[@]}" >/dev/null 2>&1
+then
+    install-packages "${dependencies[@]}"
+fi
+
+echo "${1}" >> /etc/apt/sources.list
+
+update-ca-certificates
+curl --silent --show-error --location "${2}" | gpg --dearmor > "${key_file}"

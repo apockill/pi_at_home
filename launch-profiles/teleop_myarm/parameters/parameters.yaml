@@ -1,0 +1,23 @@
+meta_parameters:
+  urdf_modules_to_load:
+    # URDF's are attached to base_link down below in the
+    - namespace: "example_node_namespace"
+      urdf_constant_name: "forklift"
+
+
+example_node_namespace:
+  MyArmNode:
+    ros__parameters:
+      root_config:
+        forklift_speed: 0.25
+        forklift_max_extent: 0.5
+
+urdf_arrangement:
+  interactive_transform_publisher:
+    ros__parameters:
+      static_transforms_file: /robot/persistent/interactive_transforms.json
+      scale_factor: 1.0
+      tf_publish_frequency: 1.0
+      transforms:
+        # Mounts the forklift urdf to the base_link so it can be visualized in rviz
+        - "base_link:example_node_namespace.forklift_body"

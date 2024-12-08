@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# Enters into the ros2 container that is spun up when a deployment is run. This
+# is a convenient way to quickly enter the container and run a program.
+#
+# Usage:
+#   docker/exec {executable}
+#
+# Examples:
+#   docker/exec bash
+#   docker/exec ros2 topic list
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+source docker/_shared.sh
+
+function main {
+  enable_display_passthrough
+  docker compose exec --interactive ros-nodes "${@:-bash}"
+}
+
+main "${@}"

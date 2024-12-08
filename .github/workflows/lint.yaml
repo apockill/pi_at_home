@@ -1,0 +1,55 @@
+
+name: Lint
+
+on: [ push ]
+
+jobs:
+  check_lint:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: lint-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            lint-pip-
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade poetry
+          poetry install
+      - name: Install Bash dependencies
+        run: sudo apt-get install --yes shellcheck
+      - name: Lint
+        run: poetry run lint --languages all --mode check
+
+  check_upstream_template:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: lint-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            lint-pip-
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade poetry
+          poetry install
+      - name: Check Upstream Template
+        run: poetry run cruft check

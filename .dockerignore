@@ -1,0 +1,6 @@
+.git
+.github
+.docker_volumes
+.docker_cache
+.mypy_cache
+pkgs/*/*_test

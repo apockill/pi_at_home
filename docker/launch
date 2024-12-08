@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+# Deploys a 'launch-profile' on the local machine.
+#
+# A launch-profile is any directory under the root `launch-profiles/` directory, which
+# contains a 'launch.py' file and related configuration for this profile.
+#
+# Normally, this command checks for updates on the base image before building
+# our images. This behavior can be disabled with the `--no-pull` flag. This is useful
+# if working in production, because you may want to make changes without having to have
+# upstream image changes cause your Dockerfile to need to be rebuilt. For example, if
+# there's a slight update to 'ubuntu:XXXX' on dockerhub, without `--no-pull` you might
+# be stuck with the container rebuilding at an inconvenient time.
+#
+# Usage:
+#   docker/launch [--no-pull] <launch-profile>
+#
+# Examples:
+#   docker/launch teleop_myarm
+#   docker/launch --no-pull teleop_myarm
+
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+function usage {
+  echo "Usage: docker/launch [--no-pull] <launch-profile>" >&2
+  echo "Available launch profiles are:" >&2
+   # shellcheck disable=SC2012
+  ls -1 launch-profiles/ | sed 's/^/      - /' >&2
+  echo "" >&2
+  echo "Read more about 'launch-profiles' under 'docs/about_template.md'" >&2
+  exit 1
+}
+
+function main {
+  local launch_profile
+  launch_profile=""
+  local pull_upstream_images
+  pull_upstream_images=true
+
+  while [[ "${#}" -gt 0 ]]; do
+    case "${1}" in
+      --no-pull)
+        pull_upstream_images=false
+        ;;
+      *)
+        if [[ "${1}" == -* ]]; then
+          echo "Unknown flag ${1}" >&2
+          usage
+        elif [[ "${launch_profile}" -eq "" ]]; then
+          launch_profile="${1}"
+        else
+          echo "Invalid number of positional arguments" >&2
+          usage
+        fi
+        ;;
+    esac
+    shift
+  done
+
+  if [[ "${launch_profile}" == "" ]]; then
+    echo "Missing <launch_profile> argument, specify a directory under 'launch-profiles/'" >&2
+    usage
+  fi
+
+  source docker/_shared.sh
+
+
+  # To reduce downtime, build the latest images before stopping any existing stacks.
+  if [[ "${pull_upstream_images}" = true ]]; then
+    pull_images
+  fi
+
+  build_images  # Build any images that need to be built
+  undeploy  # Stop any existing stack
+  enable_display_passthrough  # Enable passthrough for the stack
+
+  deploy_and_wait "${launch_profile}"
+}
+
+main "${@}"

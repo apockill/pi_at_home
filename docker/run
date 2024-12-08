@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Runs a docker container and enters the container interactively with as similar as
+# possible a configuration as when running ROS2 nodes with Docker Swarm.
+# This command must be run in the root of the repository.
+# If no executable is passed, bash will be used as default.
+#
+# Usage:
+#   docker/run {executable}
+#
+# Examples:
+#   Run commands directly in the /robot/ directory
+#   docker/run ls
+#
+#   Or, enter into a bash shell for a more interactive experience
+#   docker/run
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+source docker/_shared.sh
+
+function main {
+  enable_display_passthrough
+  build_images
+
+  docker compose \
+    run \
+    --interactive \
+    --rm \
+    ros-nodes \
+    "${@:-bash}"
+}
+
+main "${@}"

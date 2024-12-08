@@ -1,0 +1,88 @@
+[tool.poetry]
+name = "pi_at_home"
+version = "0.1.0"
+description = "This is my productionized deployment environment for my real world AI robot policies, and a place to create training data for reinforcement learning and imitation learning."
+authors = ["apockill <apocthiel@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "lint", from = ".github" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10.0,<4.0"
+
+[tool.poetry.dev-dependencies]
+mypy = "^1.9.0"
+ruff = "^0.3.3"
+cruft = "^2.15.0"
+
+# Remove darglint once ruff adds support for the rules.
+# Tracking: https://github.com/astral-sh/ruff/issues/458
+darglint = "^1.8.1"
+
+# The following libraries are used only to provide mypy with stubs
+pydantic = "^2.5.2"
+types-PyYAML = "^6.0.12.6"
+types-pytz = "^2024.1.0.20240203"
+
+[tool.poetry.scripts]
+lint = "lint.main:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+disallow_subclassing_any = false
+implicit_reexport = true
+# We can't add annotations to decorators from other libraries, making this
+# check not very useful
+disallow_untyped_decorators = false
+
+[tool.ruff]
+extend-exclude = []
+target-version = "py310"
+
+[tool.ruff.lint]
+# Rules documentation: https://docs.astral.sh/ruff/rules/#flake8-bandit-s
+select = ["ALL"]
+ignore = [
+    # Partially disabled checks libraries
+    "N818", # pep8-naming: Requires the word 'error' in all exception types
+    "S101", "S3", "S6", # flake8-bandit rules
+    "PT007", "PT011", "PT012", "PT018", "PT019", # flake8-pytest-styles rules
+    "RET503", "RET504", "RET505", "RET506", "RET507", # flake8-return
+    "SIM105",
+    "TD002", "TD003", # flake8-todos: disable strict rules
+    "FIX", # flake8-fixme: this disallows todo statements entirely
+    "PGH003", # pygrep-hooks: disallows '# type: ignore' statements
+    "PLR0913", "PLR2004", # pylint: A few rules that are too aggressive
+    "TRY003", "TRY004", "TRY300", "TRY301", "TRY400", # tryceratops
+    "NPY002", # Deprecated random number generation (let's fix this over time)
+    "PERF203", # This perf improvement is fixed in python 3.11, so no reason to frett
+    "RUF005", "RUF012", # ruff specific rules
+    # All fully disabled checks libraries
+    "D", # pydocstyle: disabled, as it's too aggressive
+    "ANN", # flake8-annotations: disables, it's too aggressive and we have mypy
+    "FBT", # flake8-boolean-trap: disabled, it doesn't allow bools as positional args
+    "A", # flake8-builtins: disabled, would be nice to work towards reenabling
+    "COM", # flake8-commas: disabled, adds commas where it's silly to do so
+    "CPY", # flake8-copyright: disabled, we don't put copyright headers in every file
+    "EM", # flake8-errmsg: disabled, doesn't allow fstrings when making error messages
+    "G", # flake8-logging-format: disabled, disallows fstrings in logging
+    "INP", # flake8-no-pep420: disabled, disallows namespace packages
+    "TID", # flake8-tidy-imports: disabled, in the future we should work towards this
+    "TCH", # flake8-type-checking: disabled, in the future we should work towards this
+    "ARG", # flake8-unused-arguments: disabled, too many false positives
+    "ISC001", # ruff throws warnings if we use its formatter but also have this enabled
+    "B027", # Doesn't allow empty methods in an abstract class
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"test*" = ["S101", "SLF001", "ERA001"]
+"conftest.*" = ["SLF001"]
+"*validation.*" = ["SLF001"]  # Library test code is treated like test code

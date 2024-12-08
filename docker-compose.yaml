@@ -1,0 +1,88 @@
+# Set  the docker compose project name, which will apply to all services
+name: pi_at_home
+
+# Create a variable for holding common configuration for all containers
+# This syntax inspired by https://docs.geoserver.org/2.21.x/en/user/styling/ysld/reference/variables.html
+x-common-config: &common-config
+  restart: "unless-stopped"
+  labels:
+    # Tells Promtail to get logs for this container
+    - "build.apockill.collect-logs=true"
+
+services:
+  ros-nodes:
+    command: ros2 launch "launch-profiles/${LAUNCH_PROFILE:- 'set in docker/_shared'}/launcher.py"
+    image: ${BUILT_IMAGE_NAME:- 'set-in-env'}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      # Mount a directory you can write to from the container for storing persistent data
+      # In your local machine this will be in '.docker_volumes/ros-nodes/'. In the robot
+      # it will be in '/robot/persistent/'
+      - ${VOLUMES_DIRECTORY:- 'set in .env'}/ros-nodes:/robot/persistent
+      # Mounts the 'launch-profiles/LAUNCH_PROFILE' directory into '/robot/launch-profile/'
+      # This way you can save configuration files from GUI's like rviz right back to your source dir
+      # LAUNCH_PROFILE is set in docker/_shared.sh
+      - ./launch-profiles/${LAUNCH_PROFILE:- ''}:/robot/launch-profile
+      # Necessary for display passthrough
+      - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+      # Necessary for PulseAudio passthrough
+      - "/run/user/${USER_ID:-1000}/pulse/native:/pulse-socket"
+      # Build cache, used by `save-build-cache` and `restore-build-cache` docker scripts
+      - type: volume
+        source: ros-nodes-build-cache
+        target: /robot/build
+    environment:
+      # Necessary for display passthrough
+      DISPLAY: $DISPLAY
+      # Necessary for PulseAudio passthrough
+      PULSE_SERVER: "unix:/pulse-socket"
+    # Gives the container access to kernel capabilities, useful for most robots
+    network_mode: host
+    cap_add:
+      - ALL
+    # Sometimes nodes never fully stop on SIGTERM
+    stop_signal: SIGKILL
+    <<:
+      - *common-config
+
+  grafana:
+    image: grafana/grafana-oss:11.3.0
+    user: "0"
+    volumes:
+      - ${VOLUMES_DIRECTORY:- 'set in .env'}/grafana:/var/lib/grafana
+      - ./docker/grafana:/etc/grafana
+    ports:
+      - "${GRAFANA_PORT:-80}:3000"
+    <<: *common-config
+
+  promtail:
+    image: grafana/promtail:3.2.1
+    command: -config.file=/config.yaml
+    configs:
+      - source: promtail
+        target: /config.yaml
+    volumes:
+      # For reading container labels and logs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers
+    # Promtail takes a long time to stop if for some reason Loki isn't running. See:
+    # https://github.com/grafana/loki/issues/6533
+    stop_signal: SIGKILL
+    <<:
+      - *common-config
+
+  loki:
+    image: grafana/loki:3.2.1
+    user: "root"
+    volumes:
+      - ${VOLUMES_DIRECTORY:- 'set in .env'}/loki:/loki
+    <<: *common-config
+
+volumes:
+  ros-nodes-build-cache:
+
+configs:
+  promtail:
+    file: docker/promtail/config.yaml

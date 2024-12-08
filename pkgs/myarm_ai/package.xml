@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+    <name>myarm_ai</name>
+    <version>0.1.0</version>
+    <description>This is my MyArm package for controlling the MyArm M&C elephant robotics arms using ROS2</description>
+    <maintainer email="apocthiel@gmail.com">apockill
+    </maintainer>
+    <license>MIT</license>
+
+    <test_depend>python3-pytest</test_depend>
+    <test_depend>python3-pytest-cov</test_depend>
+
+
+    <!-- For visualizing and testing -->
+    <depend>robot_state_publisher</depend>
+    <depend>rviz2</depend>
+    <depend>joint_state_publisher</depend>
+
+    <export>
+        <build_type>ament_python</build_type>
+    </export>
+</package>

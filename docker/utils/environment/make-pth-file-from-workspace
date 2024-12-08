@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Creates a Python .pth file pointing to the dependency installation location
+# of all ROS packages installed to the provided directory. This can be used to
+# add these directories to the sys.path without having to rely on PYTHONPATH.
+#
+# Usage:
+#     make-pth-file-from-workspace {workspace install dir} {.pth file destination}
+#
+# Example:
+#     make-pth-file-from-workspace /robot/install /usr/local/lib/pythonX.XX/dist-packages/robot.pth
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+install_dir="${1}"
+pth_file="${2}"
+
+package_install_paths=("${install_dir}"/*/lib/python3.*/site-packages)
+
+for python_path in "${package_install_paths[@]}"
+do
+  echo "${python_path}" >> "${pth_file}"
+done

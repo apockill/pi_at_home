@@ -1,0 +1,11 @@
+# This message is for demonstrating an action message that uses the RobustRPC node_helpers library
+
+---
+
+string example_data
+
+# RobustRPC required fields
+string error_name
+string error_description
+
+---
