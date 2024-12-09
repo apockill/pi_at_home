@@ -3,7 +3,7 @@
 <package format="3">
     <name>myarm_ai</name>
     <version>0.1.0</version>
-    <description>This is my MyArm package for controlling the MyArm M&C elephant robotics arms using ROS2</description>
+    <description>This is my MyArm package for controlling the MyArm M and C elephant robotics arms using ROS2</description>
     <maintainer email="apocthiel@gmail.com">apockill
     </maintainer>
     <license>MIT</license>

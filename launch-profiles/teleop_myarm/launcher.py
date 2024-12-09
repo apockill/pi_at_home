@@ -4,13 +4,13 @@ from pathlib import Path
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from pydantic import BaseModel
 
+# Import the URDF module so it register all available URDFs with the URDFConstants
+from myarm_ai import urdfs  # noqa: F401
 from node_helpers import launching
 from node_helpers.parameters import ParameterLoader
+from pydantic import BaseModel
 
-# Import the forklift URDF module so it register itself with the URDFConstants
-from myarm_ai import example_urdf
 
 class MetaParameters(BaseModel):
     """This is a great place to put parameters that affect the generation of the launch
@@ -39,9 +39,7 @@ def generate_launch_description() -> LaunchDescription:
     rviz_config = launching.required_file("/robot/launch-profile/rviz-config.rviz")
 
     urdf_node_factories = (
-        launching.URDFModuleNodeFactory(
-            parameters=node_factory_params
-        )
+        launching.URDFModuleNodeFactory(parameters=node_factory_params)
         for node_factory_params in param_loader.meta_parameters.urdf_modules_to_load
     )
     urdf_nodes = []
@@ -52,10 +50,15 @@ def generate_launch_description() -> LaunchDescription:
         *urdf_nodes,
         Node(
             package="myarm_ai",
-            executable="run_MyArmNode",
-            name="MyArmNode",
+            executable="follower_robot",
             parameters=[param_loader.ros_parameters_file],
-            namespace="example_node_namespace",
+            namespace="follower",
+        ),
+        Node(
+            package="myarm_ai",
+            executable="leader_robot",
+            parameters=[param_loader.ros_parameters_file],
+            namespace="leader",
         ),
         Node(
             package="rviz2",

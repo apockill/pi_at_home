@@ -47,6 +47,37 @@ services:
     <<:
       - *common-config
 
+  isaac_sim:
+    command: ./runapp.sh --exec /robot/launch-profile/isaac_sim_launch.py -v
+    image: nvcr.io/nvidia/isaac-sim:4.2.0
+    entrypoint: bash
+    stdin_open: true
+    tty: true
+    environment:
+      # For omniverse EULA
+      ACCEPT_EULA: Y
+      PRIVACY_CONSENT: Y
+      #For activating ros humble bridge
+      ROS_DISTRO: humble
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      LD_LIBRARY_PATH: /isaac-sim/exts/omni.isaac.ros2_bridge/humble/lib
+      # Necessary for display passthrough
+      DISPLAY: $DISPLAY
+    network_mode: host
+    volumes:
+      - "${VOLUMES_DIRECTORY}/isaac_sim/cache/kit:/isaac-sim/kit/cache:rw"
+      - "${VOLUMES_DIRECTORY}/isaac_sim/cache/ov:/root/.cache/ov:rw"
+      - "${VOLUMES_DIRECTORY}/isaac_sim/cache/pip:/root/.cache/pip:rw"
+      - "${VOLUMES_DIRECTORY}/isaac_sim/cache/glcache:/root/.cache/nvidia/GLCache:rw"
+      - "${VOLUMES_DIRECTORY}/isaac_sim/cache/computecache:/root/.nv/ComputeCache:rw"
+      - "${VOLUMES_DIRECTORY}/isaac_sim/logs:/root/.nvidia-omniverse/logs:rw"
+      - "${VOLUMES_DIRECTORY}/isaac_sim/data:/root/.local/share/ov/data:rw"
+      - "${VOLUMES_DIRECTORY}/isaac_sim/documents:/root/Documents:rw"
+      # Necessary for display passthrough
+      - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
+      - "./launch-profiles/${LAUNCH_PROFILE:- 'set in docker/_shared'}:/robot/launch-profile/"
+    <<: *common-config
+
   grafana:
     image: grafana/grafana-oss:11.3.0
     user: "0"

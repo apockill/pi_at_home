@@ -1,0 +1,1 @@
+URDF sourced from https://github.com/elephantrobotics/mycobot_ros

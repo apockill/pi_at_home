@@ -17,6 +17,9 @@
 *.mp3 filter=lfs diff=lfs merge=lfs -binary
 *.mp4 filter=lfs diff=lfs merge=lfs -binary
 *.ogg filter=lfs diff=lfs merge=lfs -binary
+*.dae filter=lfs diff=lfs merge=lfs -binary
+*.usd filter=lfs diff=lfs merge=lfs -binary
+
 # ReadTheDocs does not support Git LFS
 docs/** !filter !diff !merge binary
 

@@ -7,14 +7,16 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = ">=3.12.0,<4.0"
+acton-ai = "^0.3.0"
 
 [tool.poetry.scripts]
 # Each entry here will create an executable which can be referenced in launchfiles
-run_MyArmNode = "myarm_ai.nodes.myarm_ai_node:main"
+follower_robot = "myarm_ai.nodes.follower_robot:main"
+leader_robot = "myarm_ai.nodes.leader_robot:main"
 
 [tool.colcon-poetry-ros.data-files]
 "share/ament_index/resource_index/packages" = ["resource/myarm_ai"]
-"share/myarm_ai" = ["package.xml"]
+"share/myarm_ai" = ["package.xml", "urdfs/"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

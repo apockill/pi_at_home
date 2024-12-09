@@ -5,7 +5,7 @@ FROM ${BASE_IMAGE}
 ARG ROS2_DISTRO=jazzy
 ARG POETRY_VERSION=1.8.4
 ARG COLCON_POETRY_ROS_VERSION=0.9.0
-ARG NODE_HELPERS_VERSION=v0.5.1
+ARG NODE_HELPERS_VERSION=v0.5.3
 
 # Set variables for basic local and config, to make building easier
 ENV LANG=C.UTF-8
@@ -138,6 +138,8 @@ RUN add-workspace /robot/install/setup.bash
 # Move the build cache back into the Docker cache mount so it can be reused on
 # future runs
 RUN --mount=type=cache,target="${BUILD_CACHE}" save-build-cache
+
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Make ROS tools available by default
 ENTRYPOINT [ "enter-workspaces" ]
