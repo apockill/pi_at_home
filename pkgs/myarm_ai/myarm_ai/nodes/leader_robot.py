@@ -1,4 +1,3 @@
-import logging
 from typing import Any
 
 from node_helpers.nodes import HelpfulNode
@@ -31,13 +30,13 @@ class RobotLeaderNode(HelpfulNode):
         # For kicks, move joints forwards and backwards on repeat
         # Mapping of dict[joint_name, tuple(position, velocity)]
         self.joint_positions = {
-            self.urdf.joints.JOINT_1: (0, 0.01),
-            self.urdf.joints.JOINT_2: (0, 0.02),
-            self.urdf.joints.JOINT_3: (0, 0.03),
-            self.urdf.joints.JOINT_4: (0, 0.04),
-            self.urdf.joints.JOINT_5: (0, 0.05),
-            self.urdf.joints.JOINT_6: (0, 0.06),
-            self.urdf.joints.GRIPPER: (0, 0.07),
+            self.urdf.joints.JOINT_1: (0.0, 0.01),
+            self.urdf.joints.JOINT_2: (0.0, 0.02),
+            self.urdf.joints.JOINT_3: (0.0, 0.03),
+            self.urdf.joints.JOINT_4: (0.0, 0.04),
+            self.urdf.joints.JOINT_5: (0.0, 0.05),
+            self.urdf.joints.JOINT_6: (0.0, 0.06),
+            self.urdf.joints.GRIPPER: (0.0, 0.07),
         }
 
     def on_publish_joints(self) -> None:
