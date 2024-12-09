@@ -139,5 +139,7 @@ RUN add-workspace /robot/install/setup.bash
 # future runs
 RUN --mount=type=cache,target="${BUILD_CACHE}" save-build-cache
 
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
 # Make ROS tools available by default
 ENTRYPOINT [ "enter-workspaces" ]
