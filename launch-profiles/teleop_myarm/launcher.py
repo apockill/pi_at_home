@@ -50,8 +50,15 @@ def generate_launch_description() -> LaunchDescription:
         *urdf_nodes,
         Node(
             package="myarm_ai",
-            executable="run_MyArmNode",
-            name="MyArmNode",
+            executable="follower_robot",
+            name="follower",
+            parameters=[param_loader.ros_parameters_file],
+            namespace="example_node_namespace",
+        ),
+        Node(
+            package="myarm_ai",
+            executable="leader_robot",
+            name="leader",
             parameters=[param_loader.ros_parameters_file],
             namespace="example_node_namespace",
         ),

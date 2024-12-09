@@ -9,12 +9,12 @@ from sensor_msgs.msg import JointState
 from myarm_ai.urdfs import MyArmMURDF
 
 
-class MyArmNode(HelpfulNode):
+class RobotFollowerNode(HelpfulNode):
     class Parameters(BaseModel):
         pass
 
     def __init__(self, **kwargs: Any):
-        super().__init__("MyArmNode", **kwargs)
+        super().__init__("RobotFollowerNode", **kwargs)
         # Load parameters from the ROS parameter server
         self.params = self.declare_from_pydantic_model(self.Parameters, "root_config")
         self.urdf = MyArmMURDF.with_namespace(self.get_namespace())
@@ -28,4 +28,4 @@ class MyArmNode(HelpfulNode):
         pass
 
 
-main = create_spin_function(MyArmNode)
+main = create_spin_function(RobotFollowerNode)

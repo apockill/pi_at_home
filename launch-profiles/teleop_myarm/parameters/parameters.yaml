@@ -6,13 +6,17 @@ meta_parameters:
     - namespace: "myarm_c"
       urdf_constant_name: "myarm_c"
 
-
-example_node_namespace:
-  MyArmNode:
+leader:
+  RobotLeaderNode:
     ros__parameters:
       root_config:
-        forklift_speed: 0.25
-        forklift_max_extent: 0.5
+        test_val: true
+
+follower:
+  RobotFollowerNode:
+    ros__parameters:
+      root_config:
+        test_val: true
 
 urdf_arrangement:
   interactive_transform_publisher:

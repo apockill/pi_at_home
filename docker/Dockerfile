@@ -5,7 +5,7 @@ FROM ${BASE_IMAGE}
 ARG ROS2_DISTRO=jazzy
 ARG POETRY_VERSION=1.8.4
 ARG COLCON_POETRY_ROS_VERSION=0.9.0
-ARG NODE_HELPERS_VERSION=v0.5.2
+ARG NODE_HELPERS_VERSION=v0.5.3
 
 # Set variables for basic local and config, to make building easier
 ENV LANG=C.UTF-8

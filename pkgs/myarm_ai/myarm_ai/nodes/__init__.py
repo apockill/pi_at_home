@@ -1,1 +1,1 @@
-from .myarm_ai_node import MyArmNode
+from .myarm_ai_node import MyArmFollowerNode
