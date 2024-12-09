@@ -48,7 +48,7 @@ services:
       - *common-config
 
   isaac_sim:
-    command: ./runapp.sh /robot/launch-profile/isaac-window-config.usd -v
+    command: ./runapp.sh --exec /robot/launch-profile/isaac_sim_launch.py -v
     image: nvcr.io/nvidia/isaac-sim:4.2.0
     entrypoint: bash
     stdin_open: true
