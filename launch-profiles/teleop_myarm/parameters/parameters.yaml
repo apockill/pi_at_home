@@ -1,9 +1,9 @@
 meta_parameters:
   urdf_modules_to_load:
     # URDF's are attached to base_link down below in the
-    - namespace: "myarm_m"
+    - namespace: "follower"
       urdf_constant_name: "myarm_m"
-    - namespace: "myarm_c"
+    - namespace: "leader"
       urdf_constant_name: "myarm_c"
 
 leader:
@@ -26,5 +26,5 @@ urdf_arrangement:
       tf_publish_frequency: 1.0
       transforms:
         # Mounts the URDFs to the world so they can be visualized
-        - "base_link:myarm_m.base"
-        - "base_link:myarm_c.base"
+        - "base_link:follower.base"
+        - "base_link:leader.base"

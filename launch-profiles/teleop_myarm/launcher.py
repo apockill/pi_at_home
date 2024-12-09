@@ -51,16 +51,14 @@ def generate_launch_description() -> LaunchDescription:
         Node(
             package="myarm_ai",
             executable="follower_robot",
-            name="follower",
             parameters=[param_loader.ros_parameters_file],
-            namespace="example_node_namespace",
+            namespace="follower",
         ),
         Node(
             package="myarm_ai",
             executable="leader_robot",
-            name="leader",
             parameters=[param_loader.ros_parameters_file],
-            namespace="example_node_namespace",
+            namespace="leader",
         ),
         Node(
             package="rviz2",
