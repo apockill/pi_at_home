@@ -3,8 +3,10 @@ meta_parameters:
     # URDF's are attached to base_link down below in the
     - namespace: "follower"
       urdf_constant_name: "myarm_m"
+      apply_namespace_to_urdf: false
     - namespace: "leader"
       urdf_constant_name: "myarm_c"
+      apply_namespace_to_urdf: false
 
 leader:
   RobotLeaderNode:
@@ -26,5 +28,5 @@ urdf_arrangement:
       tf_publish_frequency: 1.0
       transforms:
         # Mounts the URDFs to the world so they can be visualized
-        - "base_link:follower.base"
-        - "base_link:leader.base"
+        - "base_link:follower_base"
+        - "base_link:leader_base"

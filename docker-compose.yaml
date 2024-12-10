@@ -4,7 +4,7 @@ name: pi_at_home
 # Create a variable for holding common configuration for all containers
 # This syntax inspired by https://docs.geoserver.org/2.21.x/en/user/styling/ysld/reference/variables.html
 x-common-config: &common-config
-  restart: "unless-stopped"
+  restart: "no"
   labels:
     # Tells Promtail to get logs for this container
     - "build.apockill.collect-logs=true"
@@ -66,6 +66,9 @@ services:
       DISPLAY: $DISPLAY
     network_mode: host
     volumes:
+      # For convenience, mount `pkgs` in so it's easy to import URDFs
+      - "./pkgs:/robot/pkgs/"
+      # As per documentation, the following directories are used by Isaac Sim
       - "${VOLUMES_DIRECTORY}/isaac_sim/cache/kit:/isaac-sim/kit/cache:rw"
       - "${VOLUMES_DIRECTORY}/isaac_sim/cache/ov:/root/.cache/ov:rw"
       - "${VOLUMES_DIRECTORY}/isaac_sim/cache/pip:/root/.cache/pip:rw"
