@@ -17,7 +17,7 @@ class RobotLeaderNode(HelpfulNode):
         super().__init__("RobotLeaderNode", **kwargs)
         # Load parameters from the ROS parameter server
         self.params = self.declare_from_pydantic_model(self.Parameters, "root_config")
-        self.urdf = MyArmCURDF.with_namespace(self.get_namespace())
+        self.urdf = MyArmCURDF
 
         # Create publishers
         self.joint_state_publisher = self.create_publisher(

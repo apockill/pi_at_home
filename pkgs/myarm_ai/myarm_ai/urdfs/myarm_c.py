@@ -6,18 +6,18 @@ from node_helpers.urdfs import URDFConstants
 
 
 class MyArmCJoints(NamedTuple):
-    JOINT_1: str = "joint1"
-    JOINT_2: str = "joint2"
-    JOINT_3: str = "joint3"
-    JOINT_4: str = "joint4"
-    JOINT_5: str = "joint5"
-    JOINT_6: str = "joint6"
+    JOINT_1: str = "leader_joint1"
+    JOINT_2: str = "leader_joint2"
+    JOINT_3: str = "leader_joint3"
+    JOINT_4: str = "leader_joint4"
+    JOINT_5: str = "leader_joint5"
+    JOINT_6: str = "leader_joint6"
 
-    GRIPPER: str = "gripper"
+    GRIPPER: str = "leader_gripper"
 
 
 class MyArmMFrames(NamedTuple):
-    BASE_LINK: str = "base"
+    BASE_LINK: str = "leader_base"
 
 
 MyArmCURDF = URDFConstants[MyArmCJoints, MyArmMFrames](
