@@ -7,8 +7,6 @@ class BaseRobotProtocol(Choosable, ABC):
     def __init__(self) -> None:
         super().__init__()
 
-        self.connect()
-
     @abstractmethod
     def connect(self) -> None:
         """Connect to the robot, or re-connect if connection has been lost"""
