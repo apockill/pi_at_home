@@ -8,7 +8,7 @@ class DummyBouncingRobot(BaseRobotProtocol):
 
     class Parameters(BaseModel):
         joint_mins: list[float] = [0.0] * 7
-        joint_maxs: list[float] = [1.5] * 7
+        joint_maxs: list[float] = [.5] * 7
         joint_speeds: list[float] = [0.01] * 7
 
     def __init__(self, parameters: Parameters | None = None):
@@ -16,9 +16,9 @@ class DummyBouncingRobot(BaseRobotProtocol):
 
         self.params = parameters or self.Parameters()
 
-        self._joint_positions = self.params.joint_mins
-        self._joint_goals = self.params.joint_maxs
-        self._joint_speeds = self.params.joint_speeds
+        self._joint_positions = self.params.joint_mins[:]
+        self._joint_goals = self.params.joint_maxs[:]
+        self._joint_speeds = self.params.joint_speeds[:]
 
     def connect(self) -> None:
         pass
