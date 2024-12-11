@@ -11,6 +11,11 @@ from .base_robot_protocol import BaseRobotProtocol
 
 T = TypeVar("T")
 
+# Gripper comes out of the API in some insane value. We want a consistent API here,
+# so this multiplier converts the gripper value to a linear distance value, compatible
+# with the URDF (and real life)
+GRIPPER_MULTIPLER = 0.00025
+
 
 def reconnect_retry(
     connect_fnc: Callable[[], T], backoff: float = 1.0, max_retries: int = 5
@@ -49,7 +54,8 @@ class MyArmLeaderRobot(BaseRobotProtocol):
         """Move the joints back and forth, and return the new positions"""
         joints_degrees = self._handle.get_joint_angles_in_mover_space()
 
-        radians = [math.radians(joint) for joint in joints_degrees]
+        radians = [math.radians(joint) for joint in joints_degrees[:6]]
+        radians.append(joints_degrees[6] * GRIPPER_MULTIPLER)
         return radians
 
     def write_joints(self, joints: list[float], speed: float) -> None:
