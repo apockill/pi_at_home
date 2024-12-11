@@ -33,6 +33,8 @@ services:
       - type: volume
         source: ros-nodes-build-cache
         target: /robot/build
+    # Enable serial passthrough
+    privileged: true
     environment:
       # Necessary for display passthrough
       DISPLAY: $DISPLAY
