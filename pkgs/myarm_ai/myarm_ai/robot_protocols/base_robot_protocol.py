@@ -17,8 +17,8 @@ class BaseRobotProtocol(Choosable, ABC):
 
     @abstractmethod
     def read_joints(self) -> list[float]:
-        """Read the current joint angles of the robot, in 'follower' space always"""
+        """Read the current joint radians of the robot, in 'leader' space always"""
 
     @abstractmethod
     def write_joints(self, joints: list[float], speed: float) -> None:
-        """Write the joint angles to the robot, in 'follower' space always"""
+        """Write the joint radians to the robot, in 'leader' space always"""

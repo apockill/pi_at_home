@@ -3,7 +3,7 @@ from typing import Any
 
 from node_helpers.nodes import HelpfulNode
 from pydantic import BaseModel
-from rclpy.qos import qos_profile_services_default
+from rclpy.qos import qos_profile_sensor_data, qos_profile_services_default
 from sensor_msgs.msg import JointState
 
 from myarm_ai.robot_protocols import BaseRobotProtocol
@@ -26,6 +26,7 @@ class BaseRobotNode(HelpfulNode, ABC):
         super().__init__(*args, **kwargs)
         self.params = self.declare_from_pydantic_model(self.Parameters, "root_config")
         self.robot_protocol = self.params.robot_protocol()
+        self.robot_protocol.connect()
 
         # Create publishers
         self.joint_state_publisher = self.create_publisher(
@@ -36,14 +37,14 @@ class BaseRobotNode(HelpfulNode, ABC):
             JointState,
             "motor_commands",
             self.on_motor_states,
-            qos_profile=qos_profile_services_default,
+            qos_profile=qos_profile_sensor_data,
         )
 
         # Create timers
         self.create_timer(1 / self.params.joint_publish_hz, self.on_publish_joints)
 
     def on_motor_states(self, msg: JointState) -> None:
-        self.robot_protocol.write_joints(msg.position, self.params.joint_publish_hz)
+        self.robot_protocol.write_joints(msg.position, self.params.move_speed)
 
     def on_publish_joints(self) -> None:
         # Map the joint names to the joint positions from the robot protocol
