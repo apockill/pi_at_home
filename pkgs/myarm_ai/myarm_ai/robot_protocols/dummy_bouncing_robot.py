@@ -8,7 +8,7 @@ class DummyBouncingRobot(BaseRobotProtocol):
 
     class Parameters(BaseModel):
         joint_mins: list[float] = [0.0] * 7
-        joint_maxs: list[float] = [.5] * 7
+        joint_maxs: list[float] = [0.5] * 7
         joint_speeds: list[float] = [0.01] * 7
 
     def __init__(self, parameters: Parameters | None = None):
