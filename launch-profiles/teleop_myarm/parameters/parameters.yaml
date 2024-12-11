@@ -12,13 +12,17 @@ leader:
   RobotLeaderNode:
     ros__parameters:
       root_config:
-        test_val: true
+        # Override this to use a real robot
+        robot_protocol: DummyBouncingRobot
+        move_speed: 0.0
 
 follower:
   RobotFollowerNode:
     ros__parameters:
       root_config:
-        test_val: true
+        # Override this to use a real robot
+        robot_protocol: DummyCopycatRobot
+        move_speed: 20.0
 
 urdf_arrangement:
   interactive_transform_publisher:
