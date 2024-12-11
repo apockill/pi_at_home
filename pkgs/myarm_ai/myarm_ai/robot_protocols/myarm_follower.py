@@ -1,7 +1,7 @@
 import logging
 import math
 
-from acton_ai import find_myarm_motor
+from acton_ai import HelpfulMyArmM, find_myarm_motor
 from pydantic import BaseModel
 
 from .base_robot_protocol import BaseRobotProtocol
@@ -20,7 +20,7 @@ class MyArmFollowerRobot(BaseRobotProtocol):
         self.params = parameters or self.Parameters()
         self._handle = reconnect_retry(self._try_bringup)
 
-    def _try_bringup(self):
+    def _try_bringup(self) -> HelpfulMyArmM:
         """This process is fraught with peril, so we need to retry it"""
         handle = find_myarm_motor()
         handle.bring_up_motors()
