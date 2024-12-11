@@ -3,20 +3,26 @@ meta_parameters:
     # URDF's are attached to base_link down below in the
     - namespace: "follower"
       urdf_constant_name: "myarm_m"
+      apply_namespace_to_urdf: false
     - namespace: "leader"
       urdf_constant_name: "myarm_c"
+      apply_namespace_to_urdf: false
 
 leader:
   RobotLeaderNode:
     ros__parameters:
       root_config:
-        test_val: true
+        # Override this to use a real robot
+        robot_protocol: DummyBouncingRobot
+        move_speed: 0.0
 
 follower:
   RobotFollowerNode:
     ros__parameters:
       root_config:
-        test_val: true
+        # Override this to use a real robot
+        robot_protocol: DummyCopycatRobot
+        move_speed: 20.0
 
 urdf_arrangement:
   interactive_transform_publisher:
@@ -26,5 +32,5 @@ urdf_arrangement:
       tf_publish_frequency: 1.0
       transforms:
         # Mounts the URDFs to the world so they can be visualized
-        - "base_link:follower.base"
-        - "base_link:leader.base"
+        - "base_link:follower_base"
+        - "base_link:leader_base"

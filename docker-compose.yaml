@@ -4,7 +4,7 @@ name: pi_at_home
 # Create a variable for holding common configuration for all containers
 # This syntax inspired by https://docs.geoserver.org/2.21.x/en/user/styling/ysld/reference/variables.html
 x-common-config: &common-config
-  restart: "unless-stopped"
+  restart: "no"
   labels:
     # Tells Promtail to get logs for this container
     - "build.apockill.collect-logs=true"
@@ -33,11 +33,14 @@ services:
       - type: volume
         source: ros-nodes-build-cache
         target: /robot/build
+    # Enable serial passthrough
+    privileged: true
     environment:
       # Necessary for display passthrough
       DISPLAY: $DISPLAY
       # Necessary for PulseAudio passthrough
       PULSE_SERVER: "unix:/pulse-socket"
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
     # Gives the container access to kernel capabilities, useful for most robots
     network_mode: host
     cap_add:
@@ -65,6 +68,9 @@ services:
       DISPLAY: $DISPLAY
     network_mode: host
     volumes:
+      # For convenience, mount `pkgs` in so it's easy to import URDFs
+      - "./pkgs:/robot/pkgs/"
+      # As per documentation, the following directories are used by Isaac Sim
       - "${VOLUMES_DIRECTORY}/isaac_sim/cache/kit:/isaac-sim/kit/cache:rw"
       - "${VOLUMES_DIRECTORY}/isaac_sim/cache/ov:/root/.cache/ov:rw"
       - "${VOLUMES_DIRECTORY}/isaac_sim/cache/pip:/root/.cache/pip:rw"

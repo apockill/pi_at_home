@@ -72,3 +72,14 @@ function deploy_and_wait {
   echo "Another process brought down the stack." >&2
   return 1
 }
+
+# Shows the user the available launch profiles
+function launch_nodes_helper {
+  echo "Usage: docker/launch [--no-pull] <launch-profile>" >&2
+  echo "Available launch profiles are:" >&2
+   # shellcheck disable=SC2012
+  ls -1 launch-profiles/ | sed 's/^/      - /' >&2
+  echo "" >&2
+  echo "Read more about 'launch-profiles' under 'docs/about_template.md'" >&2
+  exit 1
+}

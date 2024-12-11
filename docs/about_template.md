@@ -31,6 +31,9 @@ Here's a quick guide on the features of this template
   
   # Enter a currently running ROS container to poke around
   docker/exec
+  
+  # Rebuild and restart the ROS nodes in the container, useful for fast development
+  docker/reload-ros-nodes
   ```
   
   More usage examples for the above scripts are documented at the top of the script files.

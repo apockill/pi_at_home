@@ -8,6 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = ">=3.12.0,<4.0"
 acton-ai = "^0.3.0"
+pydantic = "^2.10.3"
 
 [tool.poetry.scripts]
 # Each entry here will create an executable which can be referenced in launchfiles

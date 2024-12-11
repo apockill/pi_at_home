@@ -24,16 +24,6 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-function usage {
-  echo "Usage: docker/launch [--no-pull] <launch-profile>" >&2
-  echo "Available launch profiles are:" >&2
-   # shellcheck disable=SC2012
-  ls -1 launch-profiles/ | sed 's/^/      - /' >&2
-  echo "" >&2
-  echo "Read more about 'launch-profiles' under 'docs/about_template.md'" >&2
-  exit 1
-}
-
 function main {
   local launch_profile
   launch_profile=""
@@ -62,7 +52,7 @@ function main {
 
   if [[ "${launch_profile}" == "" ]]; then
     echo "Missing <launch_profile> argument, specify a directory under 'launch-profiles/'" >&2
-    usage
+    launch_nodes_helper
   fi
 
   source docker/_shared.sh
