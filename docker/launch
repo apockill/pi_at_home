@@ -24,6 +24,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+source docker/_shared.sh
+
 function main {
   local launch_profile
   launch_profile=""
