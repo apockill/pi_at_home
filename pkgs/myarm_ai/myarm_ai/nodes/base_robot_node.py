@@ -38,7 +38,7 @@ class BaseRobotNode(HelpfulNode, ABC):
             "motor_commands",
             self.on_motor_states,
             # Likely could be improved for smoothness
-            qos_profile=qos_profile_sensor_data,
+            qos_profile=qos_profile_services_default,
         )
 
         # Create timers
