@@ -18,7 +18,7 @@ GRIPPER_MULTIPLER = 0.00025
 
 
 def reconnect_retry(
-    connect_fnc: Callable[[], T], backoff: float = 1.0, max_backoff=15.0
+    connect_fnc: Callable[[], T], backoff: float = 1.0, max_backoff: float = 15.0
 ) -> T:
     retries = 0
     while True:
