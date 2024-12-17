@@ -33,14 +33,14 @@ services:
       - type: volume
         source: ros-nodes-build-cache
         target: /robot/build
-    # Enable serial passthrough
-    privileged: true
     environment:
       # Necessary for display passthrough
       DISPLAY: $DISPLAY
       # Necessary for PulseAudio passthrough
       PULSE_SERVER: "unix:/pulse-socket"
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    # Enable serial passthrough
+    privileged: true
     # Gives the container access to kernel capabilities, useful for most robots
     network_mode: host
     cap_add:
@@ -68,8 +68,10 @@ services:
       DISPLAY: $DISPLAY
     network_mode: host
     volumes:
-      # For convenience, mount `pkgs` in so it's easy to import URDFs
+      # Mount a few useful volumes
       - "./pkgs:/robot/pkgs/"
+      - "./isaac_src:/robot/isaac_src/"
+      - "./synthetic-output:/robot/synthetic-output:rw"
       # As per documentation, the following directories are used by Isaac Sim
       - "${VOLUMES_DIRECTORY}/isaac_sim/cache/kit:/isaac-sim/kit/cache:rw"
       - "${VOLUMES_DIRECTORY}/isaac_sim/cache/ov:/root/.cache/ov:rw"

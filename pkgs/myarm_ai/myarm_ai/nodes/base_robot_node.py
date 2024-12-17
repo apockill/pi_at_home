@@ -16,7 +16,7 @@ class BaseRobotNode(HelpfulNode, ABC):
     urdf: type[MyArmCURDF] | type[MyArmMURDF]
 
     class Parameters(BaseModel):
-        joint_publish_hz: float = 10.0
+        joint_publish_hz: float = 20.0
         robot_protocol: type[BaseRobotProtocol]
 
         # In joint units
@@ -37,7 +37,8 @@ class BaseRobotNode(HelpfulNode, ABC):
             JointState,
             "motor_commands",
             self.on_motor_states,
-            qos_profile=qos_profile_sensor_data,
+            # Likely could be improved for smoothness
+            qos_profile=qos_profile_services_default,
         )
 
         # Create timers

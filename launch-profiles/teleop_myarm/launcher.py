@@ -26,6 +26,8 @@ class MetaParameters(BaseModel):
     This is set in the `/robot/launch-profile/parameters.yaml` under `meta_parameters`.
     """
 
+    rviz_enabled: bool = False
+
 
 def generate_launch_description() -> LaunchDescription:
     # Create a parameter loader to parse all yaml files in the launch-profile/parameters
@@ -42,12 +44,21 @@ def generate_launch_description() -> LaunchDescription:
         launching.URDFModuleNodeFactory(parameters=node_factory_params)
         for node_factory_params in param_loader.meta_parameters.urdf_modules_to_load
     )
-    urdf_nodes = []
+    dynamic_nodes = []
     for urdf_node_factory in urdf_node_factories:
-        urdf_nodes += urdf_node_factory.create_nodes()
+        dynamic_nodes += urdf_node_factory.create_nodes()
+
+    if param_loader.meta_parameters.rviz_enabled:
+        dynamic_nodes.append(
+            Node(
+                package="rviz2",
+                executable="rviz2",
+                arguments=["-d", [str(rviz_config)]],
+            )
+        )
 
     launch_description = [
-        *urdf_nodes,
+        *dynamic_nodes,
         Node(
             package="myarm_ai",
             executable="follower_robot",
@@ -62,11 +73,6 @@ def generate_launch_description() -> LaunchDescription:
             executable="leader_robot",
             parameters=[param_loader.ros_parameters_file],
             namespace="leader",
-        ),
-        Node(
-            package="rviz2",
-            executable="rviz2",
-            arguments=["-d", [str(rviz_config)]],
         ),
         Node(
             namespace="urdf_arrangement",

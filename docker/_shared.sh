@@ -74,12 +74,24 @@ function deploy_and_wait {
 }
 
 # Shows the user the available launch profiles
-function launch_nodes_helper {
-  echo "Usage: docker/launch [--no-pull] <launch-profile>" >&2
+function launch_profiles_helper_msg {
   echo "Available launch profiles are:" >&2
    # shellcheck disable=SC2012
   ls -1 launch-profiles/ | sed 's/^/      - /' >&2
   echo "" >&2
   echo "Read more about 'launch-profiles' under 'docs/about_template.md'" >&2
   exit 1
+}
+
+# Inform the user that the chosen launch profile is invalid if it is not a directory
+function validate_launch_profile {
+  local chosen_profile
+  chosen_profile="$1"
+
+  # Check if the chosen profile is a directory under 'launch-profiles'
+  if [[ ! -d "launch-profiles/${chosen_profile}" ]]; then
+    echo "Error: '${chosen_profile}' is not a valid launch profile." >&2
+    echo "It should be a directory under 'launch-profiles/'." >&2
+    launch_profiles_helper_msg
+  fi
 }

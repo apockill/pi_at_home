@@ -18,7 +18,7 @@ GRIPPER_MULTIPLER = 0.00025
 
 
 def reconnect_retry(
-    connect_fnc: Callable[[], T], backoff: float = 1.0, max_retries: int = 5
+    connect_fnc: Callable[[], T], backoff: float = 1.0, max_backoff: float = 15.0
 ) -> T:
     retries = 0
     while True:
@@ -28,8 +28,8 @@ def reconnect_retry(
             retries += 1
             logging.error(f"Failed to connect ({e}), retrying in {backoff} seconds")
             time.sleep(backoff)
-            if retries >= max_retries:
-                raise
+            backoff += 1
+            backoff = min(backoff, max_backoff)
 
 
 class MyArmLeaderRobot(BaseRobotProtocol):

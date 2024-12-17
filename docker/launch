@@ -24,6 +24,13 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+source docker/_shared.sh
+
+function usage {
+  echo "Usage: docker/launch [--no-pull] <launch-profile>" >&2
+  launch_profiles_helper_msg
+}
+
 function main {
   local launch_profile
   launch_profile=""
@@ -52,11 +59,9 @@ function main {
 
   if [[ "${launch_profile}" == "" ]]; then
     echo "Missing <launch_profile> argument, specify a directory under 'launch-profiles/'" >&2
-    launch_nodes_helper
+    usage
   fi
-
-  source docker/_shared.sh
-
+  validate_launch_profile "${launch_profile}"
 
   # To reduce downtime, build the latest images before stopping any existing stacks.
   if [[ "${pull_upstream_images}" = true ]]; then

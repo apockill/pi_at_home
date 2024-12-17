@@ -8,7 +8,6 @@
 #   docker/reload-ros-nodes <launch-profile>
 #
 # Examples:
-#   docker/reload-ros-nodes <launch-profile>
 #   docker/reload-ros-nodes teleop_myarm
 
 set -o errexit
@@ -19,18 +18,20 @@ source docker/_shared.sh
 
 function main {
   local launch_profile
-  launch_profile="${@}"
+  launch_profile="${1:-}"
 
-  if [[ "${launch_profile}" == "" ]]; then
-    echo "Missing <launch_profile> argument, specify a directory under 'launch-profiles/'" >&2
-    launch_nodes_helper
+  if [[ -z "${launch_profile}" ]]; then
+      echo "Missing <launch_profile> argument, specify a directory under 'launch-profiles/'" >&2
+      echo "Usage: docker/reload-ros-nodes <launch-profile>" >&2
+      launch_profiles_helper_msg
   fi
+  validate_launch_profile "${launch_profile}"
 
   build_images  # Build any images that need to be built
   enable_display_passthrough  # Enable passthrough for the stack
 
   export LAUNCH_PROFILE="${launch_profile}"
-  docker compose up -d ros-nodes
+  docker compose up -d --force-recreate ros-nodes
 }
 
 main "${@}"
