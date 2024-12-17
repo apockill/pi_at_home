@@ -6,6 +6,35 @@ It's also the first project I've built using [create-ros-app](https://github.com
 a template I'm developing to make it easier for anyone to create and deploy production 
 ready ROS2 applications.
 
+## Project Roadmap
+### Phase 1
+Phase 1 focuses on leveraging imitation learning + synthetic data to improve the robustness
+of imitation-learning datasets with regards to lighting, camera position, and other environmental
+factors.
+
+- [x] Develop a decent teleoperation interface for the MyArm M&C robot leader/follower arms
+- [x] Add isaac-sim support for visualizing above arms
+- [ ] **In Progress**: Learn how to use Replicator to multiplex trajectories of human demonstrations of robot tasks
+      done in-simulation
+- [ ] Create dataset collection tools based on lerobot dataset format
+  - [x] Play around, train, and test lerobot policies.
+        Done: [Now available via this fork of lerobot](https://github.com/huggingface/lerobot/pull/506)
+  - [ ] Create ROS service for starting/stopping data collection and serializing datasets
+- [ ] Create easy workflows for:
+  - [ ] Record demonstrations with **real leader arm** and **simulation follower arm**
+  - [ ] Multiplex demonstrations using domain randomization, leveraging Replicator learnings above
+  - [ ] Training models with mix of real and simulated data
+- [ ] Benchmark the sim2real gap with this project, publicize results to open source community
+- [ ] Add support for Koch arm and other open-source robot arm
+
+### Phase 2
+Add Reinforcement learning pipelines with ROS2 and Isaac-Sim support
+
+### Phase 3
+Support long-horizon tasks involving multiple policies, with a focus on VLMs and 
+language-grounded interaction with the robot.
+
+
 ---
 [![Test Status](https://github.com/apockill/pi_at_home/workflows/Test/badge.svg)](https://github.com/apockill/pi_at_home/actions?query=workflow%3ATest)
 [![Lint Status](https://github.com/apockill/pi_at_home/workflows/Lint/badge.svg)](https://github.com/apockill/pi_at_home/actions?query=workflow%3ALint)
