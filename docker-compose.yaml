@@ -33,14 +33,14 @@ services:
       - type: volume
         source: ros-nodes-build-cache
         target: /robot/build
-    # Enable serial passthrough
-    privileged: true
     environment:
       # Necessary for display passthrough
       DISPLAY: $DISPLAY
       # Necessary for PulseAudio passthrough
       PULSE_SERVER: "unix:/pulse-socket"
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    # Enable serial passthrough
+    privileged: true
     # Gives the container access to kernel capabilities, useful for most robots
     network_mode: host
     cap_add:
