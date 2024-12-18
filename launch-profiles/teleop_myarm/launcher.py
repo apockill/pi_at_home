@@ -65,7 +65,7 @@ def generate_launch_description() -> LaunchDescription:
             parameters=[param_loader.ros_parameters_file],
             namespace="follower",
             remappings=[
-                ("motor_commands", "/leader/desired_joint_states"),
+                ("motor_commands", "/leader/current_joint_states"),
             ],
         ),
         Node(

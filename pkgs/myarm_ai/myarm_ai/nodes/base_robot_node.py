@@ -30,7 +30,7 @@ class BaseRobotNode(HelpfulNode, ABC):
 
         # Create publishers
         self.joint_state_publisher = self.create_publisher(
-            JointState, "desired_joint_states", qos_profile_services_default
+            JointState, "current_joint_states", qos_profile_services_default
         )
         # Set motor states and speed
         self.motor_state_subscriber = self.create_subscription(
