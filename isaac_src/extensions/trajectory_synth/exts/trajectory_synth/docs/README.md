@@ -1,4 +1,6 @@
 # Python Extension Example [trajectory_synth]
 
-This is an example of pure python Kit extension. It is intended to be copied and serve as a template to create new extensions.
+This is my (Alex) first extension. It serves as an interface for starting & stopping
+trajectory recording, playback, and augmentation.
 
+The core purpose is to generate thousands of trajectories from a single human demonstration.

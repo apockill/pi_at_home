@@ -1,43 +1,102 @@
 import omni.ext
 import omni.ui as ui
+import omni.kit.commands
+import os
+import re
 
 
-# Functions and vars are available to other extension as usual in python: `example.python_ext.some_public_function(x)`
-def some_public_function(x: int):
-    print("[trajectory_synth] some_public_function was called with x: ", x)
-    return x ** x
-
-
-# Any class derived from `omni.ext.IExt` in top level module (defined in `python.modules` of `extension.toml`) will be
-# instantiated when extension gets enabled and `on_startup(ext_id)` will be called. Later when extension gets disabled
-# on_shutdown() is called.
-class Trajectory_synthExtension(omni.ext.IExt):
-    # ext_id is current extension id. It can be used with extension manager to query additional information, like where
-    # this extension is located on filesystem.
+class TrajectorySynthExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         print("[trajectory_synth] trajectory_synth startup")
 
-        self._count = 0
+        # State Variables
+        self.recording = False
+        self.recordings_dir = "recordings"  # Default directory
+        self.current_episode = 0
 
-        self._window = ui.Window("My Window", width=300, height=300)
+        # UI Window
+        self._window = ui.Window("Trajectory Synth", width=300, height=150)
         with self._window.frame:
             with ui.VStack():
-                label = ui.Label("")
-
-
-                def on_click():
-                    self._count += 1
-                    label.text = f"count: {self._count}"
-
-                def on_reset():
-                    self._count = 0
-                    label.text = "empty"
-
-                on_reset()
-
+                # Recordings Directory Input
                 with ui.HStack():
-                    ui.Button("Add", clicked_fn=on_click)
-                    ui.Button("Reset", clicked_fn=on_reset)
+                    ui.Label("Recordings Directory:")
+                    self.directory_field = ui.StringField()
+                    self.directory_field.model.set_value(self.recordings_dir)
+
+                # Status Label
+                self.status_label = ui.Label("")
+                self.update_status("Ready")
+
+                # Buttons for Start and Stop Recording
+                with ui.HStack():
+                    ui.Button("Start Recording", clicked_fn=self.start_recording)
+                    ui.Button("Stop Recording", clicked_fn=self.stop_recording)
+
+    def start_recording(self):
+        if self.recording:
+            self.update_status("Recording already in progress.")
+            return
+
+        # Get directory from the user input
+        self.recordings_dir = self.directory_field.model.get_value_as_string()
+        if not os.path.exists(self.recordings_dir):
+            os.makedirs(self.recordings_dir)
+
+        # Determine the next episode number
+        self.current_episode = self.get_next_episode_number(self.recordings_dir)
+
+        # Define the recording file path
+        take_name = f"episode_{self.current_episode:04d}"
+        record_folder = self.recordings_dir
+
+        # Start the recording
+        omni.kit.commands.execute(
+            "StartRecording",
+            target_paths=[("/World", True)],  # Adjust the target paths as needed
+            live_mode=True,
+            use_frame_range=False,
+            start_frame=0,
+            end_frame=0,
+            use_preroll=False,
+            preroll_frame=0,
+            record_to="FILE",
+            fps=0,
+            apply_root_anim=False,
+            increment_name=True,
+            record_folder=record_folder,
+            take_name=take_name,
+        )
+
+        self.recording = True
+        self.update_status(f"Recording {take_name}...")
+
+    def stop_recording(self):
+        if not self.recording:
+            self.update_status("No recording in progress.")
+            return
+
+        # Stop the recording
+        omni.kit.commands.execute("StopRecording")
+
+        self.recording = False
+        self.update_status("Recording stopped.")
+
+    def get_next_episode_number(self, directory):
+        # Scan the directory for existing episode files
+        episodes = []
+        if os.path.exists(directory):
+            for filename in os.listdir(directory):
+                match = re.match(r"episode_(\d+)", filename)
+                if match:
+                    episodes.append(int(match.group(1)))
+
+        # Return the next episode number
+        return max(episodes, default=0) + 1
+
+    def update_status(self, message):
+        # Update the status label
+        self.status_label.text = message
 
     def on_shutdown(self):
         print("[trajectory_synth] trajectory_synth shutdown")
