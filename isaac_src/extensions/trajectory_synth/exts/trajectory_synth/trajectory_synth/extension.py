@@ -11,8 +11,7 @@ class TrajectorySynthExtension(omni.ext.IExt):
 
         # State Variables
         self.recording = False
-        self.recordings_dir = "recordings"  # Default directory
-        self.current_episode = 0
+        self.recordings_dir = "/robot/synthetic-output/recordings/"  # Default directory
 
         # UI Window
         self._window = ui.Window("Trajectory Synth", width=300, height=150)
@@ -43,18 +42,15 @@ class TrajectorySynthExtension(omni.ext.IExt):
         if not os.path.exists(self.recordings_dir):
             os.makedirs(self.recordings_dir)
 
-        # Determine the next episode number
-        self.current_episode = self.get_next_episode_number(self.recordings_dir)
 
         # Define the recording file path
-        take_name = f"episode_{self.current_episode:04d}"
-        record_folder = self.recordings_dir
+        take_name = f"episode_"
 
         # Start the recording
         omni.kit.commands.execute(
             "StartRecording",
             target_paths=[("/World", True)],  # Adjust the target paths as needed
-            live_mode=True,
+            live_mode=False,
             use_frame_range=False,
             start_frame=0,
             end_frame=0,
@@ -64,12 +60,12 @@ class TrajectorySynthExtension(omni.ext.IExt):
             fps=0,
             apply_root_anim=False,
             increment_name=True,
-            record_folder=record_folder,
+            record_folder=self.recordings_dir,
             take_name=take_name,
         )
 
         self.recording = True
-        self.update_status(f"Recording {take_name}...")
+        self.update_status(f"Recording episode...")
 
     def stop_recording(self):
         if not self.recording:
