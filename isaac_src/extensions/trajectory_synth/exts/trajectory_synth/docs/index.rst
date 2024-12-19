@@ -1,4 +1,4 @@
-apockill
+trajectory_synth
 #############################
 
 Example of Python only extension
@@ -11,7 +11,7 @@ Example of Python only extension
    CHANGELOG
 
 
-.. automodule::"apockill"
+.. automodule::"trajectory_synth"
     :platform: Windows-x86_64, Linux-x86_64
     :members:
     :undoc-members:
