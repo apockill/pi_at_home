@@ -79,6 +79,8 @@ ignore = [
     "ARG", # flake8-unused-arguments: disabled, too many false positives
     "ISC001", # ruff throws warnings if we use its formatter but also have this enabled
     "B027", # Doesn't allow empty methods in an abstract class
+    "T201", # Isaac sim encourages "print" statements for debugging
+    "PT009", # isaacsim doesn't use pytest :(
 ]
 
 [tool.ruff.lint.per-file-ignores]
