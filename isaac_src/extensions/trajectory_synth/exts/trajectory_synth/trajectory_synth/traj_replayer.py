@@ -53,9 +53,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
                 self.resolution_height_field.model.set_value(240)
 
             # Replay Button
-            self.replay_button = ui.Button("Replay", clicked_fn=self.replay_episode)
-
-            # Status Label
+            self.replay_button = ui.Button("Render", clicked_fn=self.replay_episode)
             self.status_label = ui.Label("", alignment=ui.Alignment.CENTER)
 
     def update_status(self, message):
