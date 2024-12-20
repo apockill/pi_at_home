@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 import omni.ext
@@ -6,6 +5,7 @@ import omni.kit.commands
 from omni import ui
 from pxr import Sdf
 
+from . import path_utils
 from .schema import DEFAULT_RECORDINGS_DIR, SCENE_FILENAME, TIMESTEPS_FILENAME
 
 
@@ -62,9 +62,9 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             self.recordings_dir.mkdir(parents=True)
 
         # Create a new episode directory
-        next_episode = self.get_next_episode_number(self.recordings_dir)
-        self.current_episode_dir = self.recordings_dir / f"episode_{next_episode:04d}"
-        self.current_episode_dir.mkdir(parents=True, exist_ok=True)
+        self.current_episode_dir = path_utils.get_next_numbered_dir(
+            self.recordings_dir, "episode"
+        )
 
         # Save the current scene without the omnigraph
         self.ensure_omnigraph_loaded(loaded=False)
@@ -134,17 +134,6 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             print("Removing existing mover omnigraph.")
             omni.kit.commands.execute("DeletePrims", paths=["/World/MoverOmnigraph"])
             self.update_status("Mover omnigraph removed.")
-
-    def get_next_episode_number(self, directory):
-        # Scan the directory for existing episode directories
-        episodes = []
-        for name in directory.iterdir():
-            match = re.match(r"episode_(\d+)", name.name)
-            if match:
-                episodes.append(int(match.group(1)))
-
-        # Return the next episode number
-        return max(episodes, default=0) + 1
 
     def update_status(self, message):
         # Update the status label
