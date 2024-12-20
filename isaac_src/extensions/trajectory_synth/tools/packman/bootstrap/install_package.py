@@ -44,8 +44,6 @@ def install_package(package_src_path, package_dst_path):
         zip_file.extractall(temp_dir)
         # Recursively copy (temp_dir will be automatically cleaned up on exit)
         try:
-            # Recursive copy is needed because both package name and version folder could be missing in
-            # target directory:
             shutil.copytree(temp_dir, package_dst_path)
         except OSError:
             logger.warning(
