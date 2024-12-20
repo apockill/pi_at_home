@@ -1,0 +1,2 @@
+TIMESTEPS_FILENAME = "timesteps"
+SCENE_FILENAME = "scene"

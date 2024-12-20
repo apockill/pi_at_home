@@ -4,7 +4,7 @@
 import omni.kit.test
 
 # Extnsion for writing UI tests (simulate UI interaction)
-import omni.kit.ui_test as ui_test
+from omni.kit import ui_test
 
 # Import extension python module we are testing with absolute import path, as if we are external user (other extension)
 import trajectory_synth
@@ -25,9 +25,7 @@ class Test(omni.kit.test.AsyncTestCase):
         result = trajectory_synth.some_public_function(4)
         self.assertEqual(result, 256)
 
-
     async def test_window_button(self):
-
         # Find a label in our window
         label = ui_test.find("My Window//Frame/**/Label[*]")
 
