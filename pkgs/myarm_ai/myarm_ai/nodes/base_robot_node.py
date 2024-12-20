@@ -3,7 +3,7 @@ from typing import Any
 
 from node_helpers.nodes import HelpfulNode
 from pydantic import BaseModel
-from rclpy.qos import qos_profile_sensor_data, qos_profile_services_default
+from rclpy.qos import qos_profile_services_default
 from sensor_msgs.msg import JointState
 
 from myarm_ai.robot_protocols import BaseRobotProtocol
@@ -30,7 +30,7 @@ class BaseRobotNode(HelpfulNode, ABC):
 
         # Create publishers
         self.joint_state_publisher = self.create_publisher(
-            JointState, "desired_joint_states", qos_profile_services_default
+            JointState, "current_joint_states", qos_profile_services_default
         )
         # Set motor states and speed
         self.motor_state_subscriber = self.create_subscription(
