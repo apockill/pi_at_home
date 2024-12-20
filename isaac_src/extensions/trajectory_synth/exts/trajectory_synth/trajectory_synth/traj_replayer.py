@@ -30,17 +30,27 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             with ui.HStack(spacing=10):
                 ui.Label("Episode Number:", width=150)
                 self.episode_number_field = ui.IntField()
-                self.episode_number_field.model.set_value(0)
+                self.episode_number_field.model.set_value(1)
 
             # Camera Selection
             with ui.HStack(spacing=10):
                 ui.Label("Select Cameras:", width=150)
                 self.camera_selector = ui.StringField()
-                self.camera_selector.model.set_value("")
+                self.camera_selector.model.set_value("top,wrist")
                 self.camera_selector.tooltip = (
                     "Enter a comma-separated list of camera names, referenced by "
                     "their prim name"
                 )
+
+            # Resolution Width Input
+            with ui.HStack(spacing=10):
+                ui.Label("Resolution Width:", width=150)
+                self.resolution_width_field = ui.IntField()
+                self.resolution_width_field.model.set_value(320)
+
+                ui.Label("Resolution Height:", width=150)
+                self.resolution_height_field = ui.IntField()
+                self.resolution_height_field.model.set_value(240)
 
             # Replay Button
             self.replay_button = ui.Button("Replay", clicked_fn=self.replay_episode)
@@ -55,6 +65,8 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         # Get user inputs
         recordings_dir = Path(self.recordings_dir_field.model.get_value_as_string())
         episode_number = self.episode_number_field.model.get_value_as_int()
+        resolution_width = self.resolution_width_field.model.get_value_as_int()
+        resolution_height = self.resolution_height_field.model.get_value_as_int()
         selected_camera_names = [
             name.strip()
             for name in self.camera_selector.model.get_value_as_string().split(",")
@@ -104,7 +116,27 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         if len(selected_cameras) != len(selected_camera_names):
             return
 
-        # Step 5: Start the timeline
+        # Step 5: Initialize Replicator and Create Render Products
+        render_products = []
+
+        for camera in selected_cameras:
+            resolution = (resolution_width, resolution_height)
+
+            render_product = rep.create.render_product(
+                str(camera.GetPath()), resolution
+            )
+            render_products.append((camera.GetName(), render_product))
+
+        # Step 6: Attach Writer to Render Products
+        renders_dir = episode_path / "renders"
+        render_output_path = path_utils.get_next_numbered_dir(renders_dir, "render")
+        for camera_name, render_product in render_products:
+            camera_output_path = render_output_path / camera_name
+            writer = rep.WriterRegistry.get("BasicWriter")
+            writer.initialize(output_dir=str(camera_output_path), rgb=True)
+            writer.attach([render_product])
+
+        # Step 7: Trigger Rendering on Each Frame
         timeline = omni.timeline.get_timeline_interface()
         num_frames = int(
             timeline.get_end_time() * timeline.get_time_codes_per_seconds()
