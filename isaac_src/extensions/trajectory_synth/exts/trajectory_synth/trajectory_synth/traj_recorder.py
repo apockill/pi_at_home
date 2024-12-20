@@ -6,7 +6,7 @@ import omni.kit.commands
 from omni import ui
 from pxr import Sdf
 
-from .schema import SCENE_FILENAME, TIMESTEPS_FILENAME
+from .schema import DEFAULT_RECORDINGS_DIR, SCENE_FILENAME, TIMESTEPS_FILENAME
 
 
 class TrajectoryRecorderExtension(omni.ext.IExt):
@@ -19,7 +19,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         self.mover_omnigraph_path = (
             "/robot/isaac_src/assets/omnigraphs/mover_actiongraph.usd"
         )
-        self.recordings_dir = "/robot/synthetic-output/recordings/"  # Default directory
+        self.recordings_dir = DEFAULT_RECORDINGS_DIR  # Default directory
 
         # UI Window
         self._window = ui.Window("Trajectory Recorder", width=400, height=200)

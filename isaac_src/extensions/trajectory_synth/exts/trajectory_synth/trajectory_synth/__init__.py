@@ -1,1 +1,2 @@
-from .extension import *
+from .traj_recorder import TrajectoryRecorderExtension
+from .traj_replayer import TrajectoryReplayerExtension
