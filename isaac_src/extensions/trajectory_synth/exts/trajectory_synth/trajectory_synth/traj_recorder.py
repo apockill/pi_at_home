@@ -1,5 +1,5 @@
-import os
 import re
+from pathlib import Path
 
 import omni.ext
 import omni.kit.commands
@@ -23,29 +23,26 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
 
         # UI Window
         self._window = ui.Window("Trajectory Recorder", width=400, height=200)
-        with self._window.frame:
-            with ui.VStack(spacing=10):
-                # Mover Omnigraph Path Input
-                with ui.HStack(spacing=10):
-                    ui.Label("Mover Omnigraph Path:", width=150)
-                    self.mover_omnigraph_field = ui.StringField()
-                    self.mover_omnigraph_field.model.set_value(
-                        self.mover_omnigraph_path
-                    )
+        with self._window.frame, ui.VStack(spacing=10):
+            # Mover Omnigraph Path Input
+            with ui.HStack(spacing=10):
+                ui.Label("Mover Omnigraph Path:", width=150)
+                self.mover_omnigraph_field = ui.StringField()
+                self.mover_omnigraph_field.model.set_value(self.mover_omnigraph_path)
 
-                # Recordings Directory Input
-                with ui.HStack(spacing=10):
-                    ui.Label("Recordings Directory:", width=150)
-                    self.directory_field = ui.StringField()
-                    self.directory_field.model.set_value(self.recordings_dir)
+            # Recordings Directory Input
+            with ui.HStack(spacing=10):
+                ui.Label("Recordings Directory:", width=150)
+                self.directory_field = ui.StringField()
+                self.directory_field.model.set_value(self.recordings_dir)
 
-                # Status Label
-                self.status_label = ui.Label("Ready", alignment=ui.Alignment.CENTER)
+            # Status Label
+            self.status_label = ui.Label("Ready", alignment=ui.Alignment.CENTER)
 
-                # Single Toggle Button for Start/Stop Recording
-                self.toggle_recording_button = ui.Button(
-                    "Start Recording", clicked_fn=self.toggle_recording
-                )
+            # Single Toggle Button for Start/Stop Recording
+            self.toggle_recording_button = ui.Button(
+                "Start Recording", clicked_fn=self.toggle_recording
+            )
 
     def toggle_recording(self):
         if self.recording:
@@ -60,24 +57,20 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         timeline.set_current_time(0)
 
         # Get directory from the user input
-        self.recordings_dir = self.directory_field.model.get_value_as_string()
-        if not os.path.exists(self.recordings_dir):
-            os.makedirs(self.recordings_dir)
+        self.recordings_dir = Path(self.directory_field.model.get_value_as_string())
+        if not self.recordings_dir.exists():
+            self.recordings_dir.mkdir(parents=True)
 
         # Create a new episode directory
         next_episode = self.get_next_episode_number(self.recordings_dir)
-        self.current_episode_dir = os.path.join(
-            self.recordings_dir, f"episode_{next_episode:04d}"
-        )
-        os.makedirs(self.current_episode_dir, exist_ok=True)
+        self.current_episode_dir = self.recordings_dir / f"episode_{next_episode:04d}"
+        self.current_episode_dir.mkdir(parents=True, exist_ok=True)
 
         # Save the current scene without the omnigraph
         self.ensure_omnigraph_loaded(loaded=False)
         stage = omni.usd.get_context().get_stage()
-        scene_file_path = os.path.join(
-            self.current_episode_dir, f"{SCENE_FILENAME}.usd"
-        )
-        stage.GetRootLayer().Export(scene_file_path)
+        scene_file_path = self.current_episode_dir / f"{SCENE_FILENAME}.usd"
+        stage.GetRootLayer().Export(str(scene_file_path))
         print(f"Scene saved to {scene_file_path}")
 
         # Ensure the omnigraph is loaded
@@ -97,7 +90,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             fps=0,
             apply_root_anim=False,
             increment_name=False,
-            record_folder=self.current_episode_dir,
+            record_folder=str(self.current_episode_dir),
             take_name=TIMESTEPS_FILENAME,
         )
 
@@ -145,11 +138,10 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
     def get_next_episode_number(self, directory):
         # Scan the directory for existing episode directories
         episodes = []
-        if os.path.exists(directory):
-            for name in os.listdir(directory):
-                match = re.match(r"episode_(\d+)", name)
-                if match:
-                    episodes.append(int(match.group(1)))
+        for name in directory.iterdir():
+            match = re.match(r"episode_(\d+)", name.name)
+            if match:
+                episodes.append(int(match.group(1)))
 
         # Return the next episode number
         return max(episodes, default=0) + 1
