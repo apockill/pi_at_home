@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 
 import omni.ext
@@ -8,8 +9,7 @@ import omni.usd
 from omni import ui
 from pxr import Sdf
 
-from . import path_utils
-from .schema import DEFAULT_RECORDINGS_DIR
+from . import path_utils, schema
 
 
 class TrajectoryReplayerExtension(omni.ext.IExt):
@@ -18,13 +18,13 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         self._build_ui()
 
     def _build_ui(self):
-        self._window = ui.Window("Trajectory Replayer", width=400, height=300)
+        self._window = ui.Window("Trajectory Replayer", width=400, height=350)
         with self._window.frame, ui.VStack(spacing=10):
             # Recordings Directory Input
             with ui.HStack(spacing=10):
                 ui.Label("Recordings Directory:", width=150)
                 self.recordings_dir_field = ui.StringField()
-                self.recordings_dir_field.model.set_value(DEFAULT_RECORDINGS_DIR)
+                self.recordings_dir_field.model.set_value(schema.DEFAULT_RECORDINGS_DIR)
 
             # Episode Number Input
             with ui.HStack(spacing=10):
@@ -53,13 +53,16 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
                 self.resolution_height_field.model.set_value(240)
 
             # Replay Button
-            self.replay_button = ui.Button("Render", clicked_fn=self.replay_episode)
+            self.replay_button = ui.Button(
+                "Render",
+                clicked_fn=lambda: asyncio.ensure_future(self.replay_episode()),
+            )
             self.status_label = ui.Label("", alignment=ui.Alignment.CENTER)
 
     def update_status(self, message):
         self.status_label.text = message
 
-    def replay_episode(self):
+    async def replay_episode(self) -> None:  # noqa: PLR0915
         # Get user inputs
         recordings_dir = Path(self.recordings_dir_field.model.get_value_as_string())
         episode_number = self.episode_number_field.model.get_value_as_int()
@@ -76,16 +79,10 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             return
 
         # Construct paths
-        scene_usd_path = episode_path / "scene.usd"
-        timesteps_usd_path = episode_path / "timesteps.usd"
-
-        # Validate paths
-        if not scene_usd_path.exists():
-            self.update_status(f"Scene file not found: {scene_usd_path}")
-            return
-
-        if not timesteps_usd_path.exists():
-            self.update_status(f"Timesteps file not found: {timesteps_usd_path}")
+        try:
+            traj_recording = schema.TrajectoryRecording(episode_path)
+        except FileNotFoundError:
+            self.update_status("Invalid trajectory recording, file missing.")
             return
 
         # Step 1: New Scene
@@ -95,17 +92,19 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         # Step 2: Insert timesteps.usd and scene.usd
         stage = omni.usd.get_context().get_stage()
         root_layer = stage.GetRootLayer()
-        root_layer.subLayerPaths.append(str(timesteps_usd_path))
-        root_layer.subLayerPaths.append(str(scene_usd_path))
+        root_layer.subLayerPaths.append(str(traj_recording.timesteps_path))
+        root_layer.subLayerPaths.append(str(traj_recording.scene_path))
 
         # Step 3: Set scene.usd as the authoring layer
-        scene_layer = Sdf.Layer.FindOrOpen(str(scene_usd_path))
+        scene_layer = Sdf.Layer.FindOrOpen(str(traj_recording.scene_path))
         if scene_layer:
             stage.SetEditTarget(scene_layer)
-            self.update_status(f"Set {scene_usd_path} as the authoring layer.")
+            self.update_status(
+                f"Set {traj_recording.scene_path} as the authoring layer."
+            )
         else:
             self.update_status(
-                f"Failed to set {scene_usd_path} as the authoring layer."
+                f"Failed to set {traj_recording.scene_path} as the authoring layer."
             )
             return
 
@@ -134,17 +133,40 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             writer.initialize(output_dir=str(camera_output_path), rgb=True)
             writer.attach([render_product])
 
-        # Step 7: Trigger Rendering on Each Frame
-        timeline = omni.timeline.get_timeline_interface()
-        num_frames = int(
-            timeline.get_end_time() * timeline.get_time_codes_per_seconds()
-        )
-        with rep.trigger.on_frame(num_frames=num_frames):
-            pass  # The writer will handle capturing frames
+        # Step 7: Determine Frame Range from Timesteps USD
+        timesteps_layer = Sdf.Layer.FindOrOpen(str(traj_recording.timesteps_path))
+        if not timesteps_layer:
+            self.update_status(f"Failed to load {traj_recording.timesteps_path}.")
+            return
 
-        # Step 8: Start the timeline
-        timeline.play()
-        self.update_status("Timeline started and rendering frames.")
+        assert timesteps_layer.HasEndTimeCode()
+
+        time_codes = timesteps_layer.ListAllTimeSamples()
+        if not time_codes:
+            self.update_status(
+                f"No time samples found in {traj_recording.timesteps_path}."
+            )
+            return
+
+        # Step 8: Control Timeline Manually
+        timeline = omni.timeline.get_timeline_interface()
+        timeline.set_current_time(0.0)
+        await omni.kit.app.get_app().next_update_async()
+
+        framerate = 30  # TODO: Make framerate randomized
+        end_time = traj_recording.metadata.end_time
+        final_frame = int(round(end_time * framerate))
+
+        for frame in range(final_frame):
+            timeline.set_current_time(frame / framerate)
+            timeline.forward_one_frame()
+            await omni.kit.app.get_app().next_update_async()
+            self.update_status(f"Rendering frame {frame}/{final_frame}")
+
+        timeline.stop()
+        await omni.kit.app.get_app().next_update_async()
+
+        self.update_status("Rendering completed.")
 
     def get_cameras_from_names(self, selected_camera_names: list[str]):
         available_cameras = self.get_scene_cameras()

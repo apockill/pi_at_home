@@ -5,8 +5,7 @@ import omni.kit.commands
 from omni import ui
 from pxr import Sdf
 
-from . import path_utils
-from .schema import DEFAULT_RECORDINGS_DIR, SCENE_FILENAME, TIMESTEPS_FILENAME
+from . import path_utils, schema
 
 
 class TrajectoryRecorderExtension(omni.ext.IExt):
@@ -19,7 +18,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         self.mover_omnigraph_path = (
             "/robot/isaac_src/assets/omnigraphs/mover_actiongraph.usd"
         )
-        self.recordings_dir = DEFAULT_RECORDINGS_DIR  # Default directory
+        self.recordings_dir = schema.DEFAULT_RECORDINGS_DIR
 
         # UI Window
         self._window = ui.Window("Trajectory Recorder", width=400, height=200)
@@ -51,6 +50,8 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             self.start_recording()
 
     def start_recording(self):
+        # TODO: Prevent this being called multiple times while recording
+
         # Reset the timeline
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
@@ -58,18 +59,18 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
 
         # Get directory from the user input
         self.recordings_dir = Path(self.directory_field.model.get_value_as_string())
-        if not self.recordings_dir.exists():
-            self.recordings_dir.mkdir(parents=True)
+        self.recordings_dir.mkdir(parents=True, exist_ok=True)
 
         # Create a new episode directory
-        self.current_episode_dir = path_utils.get_next_numbered_dir(
-            self.recordings_dir, "episode"
+        self.current_episode = schema.TrajectoryRecording(
+            path_utils.get_next_numbered_dir(self.recordings_dir, "episode"),
+            expect_exists=False,
         )
 
         # Save the current scene without the omnigraph
         self.ensure_omnigraph_loaded(loaded=False)
         stage = omni.usd.get_context().get_stage()
-        scene_file_path = self.current_episode_dir / f"{SCENE_FILENAME}.usd"
+        scene_file_path = self.current_episode.scene_path
         stage.GetRootLayer().Export(str(scene_file_path))
         print(f"Scene saved to {scene_file_path}")
 
@@ -86,12 +87,12 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             end_frame=0,
             use_preroll=False,
             preroll_frame=0,
-            record_to="NEW_LAYER",
+            record_to="FILE",
             fps=0,
             apply_root_anim=False,
             increment_name=False,
-            record_folder=str(self.current_episode_dir),
-            take_name=TIMESTEPS_FILENAME,
+            record_folder=str(self.current_episode.directory),
+            take_name=schema.TIMESTEPS_FILENAME,
         )
 
         self.recording = True
@@ -100,16 +101,29 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         timeline.play()  # Start the timeline playback
 
     def stop_recording(self):
+        # Stop the recording
+        omni.kit.commands.execute("StopRecording")
+
         # Stop the timeline
         timeline = omni.timeline.get_timeline_interface()
         timeline.stop()
 
-        # Stop the recording
-        omni.kit.commands.execute("StopRecording")
-
         self.recording = False
         self.toggle_recording_button.text = "Start Recording"
         self.update_status("Recording stopped.")
+
+        # Write the metadata file
+        metadata_file_path = self.current_episode.metadata_path
+        metadata = schema.TrajectoryRecordingMeta(end_time=timeline.get_current_time())
+        metadata_file_path.write_text(metadata.model_dump_json())
+
+        # Create the 'renders' directory, then validate the recording
+        self.current_episode.renders_dir.mkdir(parents=True, exist_ok=False)
+
+        # Validate the recording
+        if not self.current_episode.validate():
+            self.update_status("Recording failed validation. Somethings wrong!")
+            return
 
     def ensure_omnigraph_loaded(self, loaded: bool) -> None:
         # Check or remove the omnigraph as needed
