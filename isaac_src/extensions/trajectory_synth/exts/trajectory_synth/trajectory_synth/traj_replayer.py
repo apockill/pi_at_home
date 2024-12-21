@@ -15,10 +15,11 @@ from . import path_utils, schema
 class TrajectoryReplayerExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         print("[trajectory_synth] trajectory_replayer startup")
+        self.randomization_config = DomainRandomization()
         self._build_ui()
 
     def _build_ui(self):
-        self._window = ui.Window("Trajectory Replayer", width=400, height=350)
+        self._window = ui.Window("Trajectory Replayer", width=400, height=400)
         with self._window.frame, ui.VStack(spacing=10):
             # Recordings Directory Input
             with ui.HStack(spacing=10):
@@ -42,7 +43,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
                     "their prim name"
                 )
 
-            # Resolution Width Input
+            # Resolution Input
             with ui.HStack(spacing=10):
                 ui.Label("Resolution Width:", width=150)
                 self.resolution_width_field = ui.IntField()
@@ -52,17 +53,32 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
                 self.resolution_height_field = ui.IntField()
                 self.resolution_height_field.model.set_value(240)
 
-            # Replay Button
-            self.replay_button = ui.Button(
+            # Number of Renders Input
+            with ui.HStack(spacing=10):
+                ui.Label("Number of Renders:", width=150)
+                self.num_renders_field = ui.IntField()
+                self.num_renders_field.model.set_value(1)
+
+            # Render Button
+            self.render_button = ui.Button(
                 "Render",
-                clicked_fn=lambda: asyncio.ensure_future(self.replay_episode()),
+                clicked_fn=lambda: asyncio.ensure_future(self.render_multiple_times()),
             )
             self.status_label = ui.Label("", alignment=ui.Alignment.CENTER)
 
     def update_status(self, message):
         self.status_label.text = message
 
-    async def replay_episode(self) -> None:  # noqa: PLR0915
+    async def render_multiple_times(self) -> None:
+        self.render_button.enabled = False
+        num_renders = self.num_renders_field.model.get_value_as_int()
+        for i in range(num_renders):
+            self.update_status(f"Starting render {i + 1} of {num_renders}...")
+            await self.replay_episode(render_index=i)
+        self.update_status("All renders completed.")
+        self.render_button.enabled = True
+
+    async def replay_episode(self, render_index: int) -> None:
         # Get user inputs
         recordings_dir = Path(self.recordings_dir_field.model.get_value_as_string())
         episode_number = self.episode_number_field.model.get_value_as_int()
@@ -117,11 +133,20 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         render_products = []
 
         for camera in selected_cameras:
+            camera_name = camera.GetName()
             resolution = (resolution_width, resolution_height)
+            randomization_config = self.randomization_config.camera_params[camera_name]
 
-            render_product = rep.create.render_product(
-                str(camera.GetPath()), resolution
-            )
+            # Apply randomization using Replicator
+            camera_path = str(camera.GetPath())
+            camera_prim = rep.get.prims(camera_path)
+            with camera_prim:
+                rep.modify.pose(
+                    position=randomization_config.position_distribution,
+                    rotation=randomization_config.rotation_distribution,
+                )
+
+            render_product = rep.create.render_product(camera_path, resolution)
             render_products.append((camera.GetName(), render_product))
 
         # Step 6: Attach Writer to Render Products
@@ -161,12 +186,14 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             timeline.set_current_time(frame / framerate)
             timeline.forward_one_frame()
             await omni.kit.app.get_app().next_update_async()
-            self.update_status(f"Rendering frame {frame}/{final_frame}")
+            self.update_status(
+                f"Rendering frame {frame}/{final_frame} of render {render_index + 1}"
+            )
 
         timeline.stop()
         await omni.kit.app.get_app().next_update_async()
 
-        self.update_status("Rendering completed.")
+        self.update_status(f"Render {render_index + 1} completed.")
 
     def get_cameras_from_names(self, selected_camera_names: list[str]):
         available_cameras = self.get_scene_cameras()
