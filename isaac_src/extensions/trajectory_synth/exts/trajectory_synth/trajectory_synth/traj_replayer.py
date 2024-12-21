@@ -132,38 +132,16 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             return
 
         # Step 5: Initialize Replicator and Create Render Products
-        # TODO: Consider using custom events for more explicit triggering
-        #       https://forums.developer.nvidia.com/t/replicator-and-rep-orchestrator-step/314079
-        render_products = []
-        rep.set_global_seed(random.randint(0, 10000))  # Not strictly necessary
-        for camera in selected_cameras:
-            camera_name = camera.GetName()
-            resolution = (resolution_width, resolution_height)
-            randomization_configs = self.randomization_config.camera_params[camera_name]
-            randomization_config = random.choice(randomization_configs)
+        self._set_up_replicator(
+            config=self.randomization_config,
+            camera_names=selected_cameras,
+            render_resolution=(resolution_width, resolution_height),
+            render_path=path_utils.get_next_numbered_dir(
+                traj_recording.renders_dir, "render"
+            ),
+        )
 
-            # Apply randomization using Replicator
-            camera_path = str(camera.GetPath())
-            camera_prim = rep.get.prims(camera_path)
-            with camera_prim:
-                rep.modify.pose(
-                    position=randomization_config.position_distribution,
-                    rotation=randomization_config.rotation_distribution,
-                )
-
-            render_product = rep.create.render_product(camera_path, resolution)
-            render_products.append((camera.GetName(), render_product))
-
-        # Step 6: Attach Writer to Render Products
-        renders_dir = episode_path / "renders"
-        render_output_path = path_utils.get_next_numbered_dir(renders_dir, "render")
-        for camera_name, render_product in render_products:
-            camera_output_path = render_output_path / camera_name
-            writer = rep.WriterRegistry.get("BasicWriter")
-            writer.initialize(output_dir=str(camera_output_path), rgb=True)
-            writer.attach([render_product])
-
-        # Step 7: Determine Frame Range from Timesteps USD
+        # Step 6: Determine Frame Range from Timesteps USD
         timesteps_layer = Sdf.Layer.FindOrOpen(str(traj_recording.timesteps_path))
         if not timesteps_layer:
             self.update_status(f"Failed to load {traj_recording.timesteps_path}.")
@@ -178,7 +156,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             )
             return
 
-        # Step 8: Control Timeline Manually
+        # Step 7: Control Timeline Manually
         timeline = omni.timeline.get_timeline_interface()
         timeline.set_current_time(0.0)
         await omni.kit.app.get_app().next_update_async()
@@ -229,3 +207,39 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
 
     def on_shutdown(self):
         print("[trajectory_synth] trajectory_replayer shutdown")
+
+    @staticmethod
+    def _set_up_replicator(
+        config: schema.DomainRandomization,
+        render_path: Path,
+        camera_names: str,
+        render_resolution: tuple[int, int],
+    ):
+        # Create cameras and randomize their positions
+        # TODO: Consider using custom events for more explicit triggering
+        #       https://forums.developer.nvidia.com/t/replicator-and-rep-orchestrator-step/314079
+        render_products = []
+        rep.set_global_seed(random.randint(0, 10000))  # Not strictly necessary
+        for camera in camera_names:
+            camera_name = camera.GetName()
+            randomization_configs = config.camera_params[camera_name]
+            chosen_for_camera = random.choice(randomization_configs)
+
+            # Apply randomization using Replicator
+            camera_path = str(camera.GetPath())
+            camera_prim = rep.get.prims(camera_path)
+            with camera_prim:
+                rep.modify.pose(
+                    position=chosen_for_camera.position_distribution,
+                    rotation=chosen_for_camera.rotation_distribution,
+                )
+
+            render_product = rep.create.render_product(camera_path, render_resolution)
+            render_products.append((camera.GetName(), render_product))
+
+        # Create output directory for renders
+        for camera_name, render_product in render_products:
+            camera_output_path = render_path / camera_name
+            writer = rep.WriterRegistry.get("BasicWriter")
+            writer.initialize(output_dir=str(camera_output_path), rgb=True)
+            writer.attach([render_product])
