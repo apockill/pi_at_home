@@ -1,4 +1,5 @@
 import asyncio
+import random
 from pathlib import Path
 
 import omni.ext
@@ -15,7 +16,7 @@ from . import path_utils, schema
 class TrajectoryReplayerExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         print("[trajectory_synth] trajectory_replayer startup")
-        self.randomization_config = DomainRandomization()
+        self.randomization_config = schema.DomainRandomization()
         self._build_ui()
 
     def _build_ui(self):
@@ -67,6 +68,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             self.status_label = ui.Label("", alignment=ui.Alignment.CENTER)
 
     def update_status(self, message):
+        print(f"[trajectory_synth] Status: {message}")
         self.status_label.text = message
 
     async def render_multiple_times(self) -> None:
@@ -130,12 +132,15 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             return
 
         # Step 5: Initialize Replicator and Create Render Products
+        # TODO: Consider using custom events for more explicit triggering
+        #       https://forums.developer.nvidia.com/t/replicator-and-rep-orchestrator-step/314079
         render_products = []
-
+        rep.set_global_seed(random.randint(0, 10000))  # Not strictly necessary
         for camera in selected_cameras:
             camera_name = camera.GetName()
             resolution = (resolution_width, resolution_height)
-            randomization_config = self.randomization_config.camera_params[camera_name]
+            randomization_configs = self.randomization_config.camera_params[camera_name]
+            randomization_config = random.choice(randomization_configs)
 
             # Apply randomization using Replicator
             camera_path = str(camera.GetPath())

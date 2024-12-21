@@ -1,11 +1,14 @@
 from pathlib import Path
 
+import omni.replicator.core as rep
 from pydantic import BaseModel
 
 TIMESTEPS_FILENAME = "timesteps"  # usd
 SCENE_FILENAME = "scene"  # usd
 METADATA_FILENAME = "metadata.json"
 DEFAULT_RECORDINGS_DIR = "/robot/synthetic-output/recordings/"
+
+BOUND = tuple[float, float, float]
 
 
 class TrajectoryRecordingMeta(BaseModel):
@@ -39,3 +42,66 @@ class TrajectoryRecording:
         return TrajectoryRecordingMeta.model_validate_json(
             self.metadata_path.read_text()
         )
+
+
+class CameraRandomization(BaseModel):
+    pos_offset_max: tuple[float, float, float]
+    pos_offset_min: tuple[float, float, float] | None = None
+
+    rot_offset_max: tuple[float, float, float]
+    rot_offset_min: tuple[float, float, float] | None = None
+
+    @property
+    def position_distribution(self):
+        return self._uniform(self.pos_offset_max, self.pos_offset_min)
+
+    @property
+    def rotation_distribution(self):
+        return self._uniform(self.rot_offset_max, self.rot_offset_min)
+
+    def _uniform(self, max_bound: BOUND, min_bound: BOUND | None):
+        if min_bound is None:
+            min_bound = [-n for n in max_bound]
+        # Sanity check
+        assert all(min_bound[i] <= max_bound[i] for i in range(3))
+        return rep.distribution.uniform(min_bound, max_bound)
+
+
+class DomainRandomization(BaseModel):
+    # Camera name -> randomization params
+    # One is randomly chosen per full trajectory run
+    camera_params: dict[str, list[CameraRandomization]] = {
+        "top": [
+            # Vary rotation as much as possible
+            CameraRandomization(
+                pos_offset_min=(0, 0, 0),
+                pos_offset_max=(0, 0, 0),
+                rot_offset_min=(-10.0, -6.0, -5.0),  # Validated
+                rot_offset_max=(1.0, 6.0, 5.0),  # Validated
+            ),
+            # Vary position around within a small range
+            CameraRandomization(
+                pos_offset_min=(-0.08, -0.05, -0.025),  # Validated
+                pos_offset_max=(0.08, 0.02, 0.25),  # Validated
+                rot_offset_min=(0, 0, 0),
+                rot_offset_max=(0, 0, 0),
+            ),
+            # Keep the Z far from the normal position, allowing for drastic rotations
+            # around the Z axis
+            CameraRandomization(
+                pos_offset_min=(0, 0, 0.15),
+                pos_offset_max=(0, 0, 0.35),
+                rot_offset_min=(0.0, 0, -50),
+                rot_offset_max=(0.0, 0, 50),
+            ),
+        ],
+        "wrist": [
+            # Strategy: Set rot offset to 10, and maximize the position offset while
+            #           keeping the picker tip in view
+            CameraRandomization(
+                pos_offset_max=(0.01, 0.005, 0.015),  # Validated
+                rot_offset_min=[-15, -10, -10],  # Validated
+                rot_offset_max=[7, 10, 10],  # Validated
+            )
+        ],
+    }
