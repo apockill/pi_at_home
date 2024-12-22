@@ -33,7 +33,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             with ui.HStack(spacing=10):
                 ui.Label("Recordings Directory:", width=150)
                 self.directory_field = ui.StringField()
-                self.directory_field.model.set_value(self.recordings_dir)
+                self.directory_field.model.set_value(str(self.recordings_dir))
 
             # Status Label
             self.status_label = ui.Label("Ready", alignment=ui.Alignment.CENTER)

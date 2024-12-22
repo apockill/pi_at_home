@@ -6,7 +6,8 @@ from pydantic import BaseModel
 TIMESTEPS_FILENAME = "timesteps"  # usd
 SCENE_FILENAME = "scene"  # usd
 METADATA_FILENAME = "metadata.json"
-DEFAULT_RECORDINGS_DIR = "/robot/synthetic-output/recordings/"
+DEFAULT_TEXTURES_DIR = Path("/robot/isaac_src/assets/textures/512x512-photorealistic")
+DEFAULT_RECORDINGS_DIR = Path("/robot/synthetic-output/recordings/")
 
 BOUND = tuple[float, float, float]
 
@@ -68,6 +69,11 @@ class CameraRandomization(BaseModel):
 
 
 class DomainRandomization(BaseModel):
+    # Choose how fast or slow the robot moves. This allows you to "stretch" or
+    # "squish" the trajectory in time.
+    min_render_fps: int = 10
+    max_render_fps: int = 50
+
     # Camera name -> randomization params
     # One is randomly chosen per full trajectory run
     camera_params: dict[str, list[CameraRandomization]] = {

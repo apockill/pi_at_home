@@ -12,3 +12,8 @@ def get_next_numbered_dir(contains_numbered_dirs: Path, prefix: str) -> Path:
     ]
     next_number = max(existing_numbered_dirs, default=0) + 1
     return contains_numbered_dirs / f"{prefix}_{next_number:03d}"
+
+
+def get_all_textures_in_dir(directory: Path) -> list[Path]:
+    """Recursively find all .png and .jpg files in the given directory."""
+    return list(directory.rglob("*.png")) + list(directory.rglob("*.jpg"))
