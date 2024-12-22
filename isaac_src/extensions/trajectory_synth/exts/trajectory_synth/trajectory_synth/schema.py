@@ -45,7 +45,7 @@ class TrajectoryRecording:
         )
 
 
-class CameraRandomization(BaseModel):
+class CameraDistribution(BaseModel):
     pos_offset_max: tuple[float, float, float]
     pos_offset_min: tuple[float, float, float] | None = None
 
@@ -68,7 +68,7 @@ class CameraRandomization(BaseModel):
         return rep.distribution.uniform(min_bound, max_bound)
 
 
-class DomainRandomization(BaseModel):
+class RandomizationDistributions(BaseModel):
     # Choose how fast or slow the robot moves. This allows you to "stretch" or
     # "squish" the trajectory in time.
     min_render_fps: int = 10
@@ -76,17 +76,17 @@ class DomainRandomization(BaseModel):
 
     # Camera name -> randomization params
     # One is randomly chosen per full trajectory run
-    camera_params: dict[str, list[CameraRandomization]] = {
+    camera_params: dict[str, list[CameraDistribution]] = {
         "top": [
             # Vary rotation as much as possible
-            CameraRandomization(
+            CameraDistribution(
                 pos_offset_min=(0, 0, 0),
                 pos_offset_max=(0, 0, 0),
                 rot_offset_min=(-10.0, -6.0, -5.0),  # Validated
                 rot_offset_max=(1.0, 6.0, 5.0),  # Validated
             ),
             # Vary position around within a small range
-            CameraRandomization(
+            CameraDistribution(
                 pos_offset_min=(-0.08, -0.05, -0.025),  # Validated
                 pos_offset_max=(0.08, 0.02, 0.25),  # Validated
                 rot_offset_min=(0, 0, 0),
@@ -94,7 +94,7 @@ class DomainRandomization(BaseModel):
             ),
             # Keep the Z far from the normal position, allowing for drastic rotations
             # around the Z axis
-            CameraRandomization(
+            CameraDistribution(
                 pos_offset_min=(0, 0, 0.15),
                 pos_offset_max=(0, 0, 0.35),
                 rot_offset_min=(0.0, 0, -50),
@@ -104,7 +104,7 @@ class DomainRandomization(BaseModel):
         "wrist": [
             # Strategy: Set rot offset to 10, and maximize the position offset while
             #           keeping the picker tip in view
-            CameraRandomization(
+            CameraDistribution(
                 pos_offset_max=(0.01, 0.005, 0.015),  # Validated
                 rot_offset_min=[-15, -10, -10],  # Validated
                 rot_offset_max=[7, 10, 10],  # Validated
