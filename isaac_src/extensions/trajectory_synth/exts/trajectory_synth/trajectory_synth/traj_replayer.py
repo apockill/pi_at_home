@@ -74,7 +74,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             # Render Settings
             with ui.CollapsableFrame("Randomization Settings", height=200):
                 self.render_settings_field = ui.StringField(multiline=True)
-                default_randomization = schema.DomainRandomization().dict()
+                default_randomization = schema.RandomizationDistributions().model_dump()
                 self.render_settings_field.model.set_value(
                     yaml.safe_dump(default_randomization, sort_keys=False)
                 )
@@ -96,7 +96,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
 
         # Load DomainRandomization from UI
         try:
-            randomization_config = schema.DomainRandomization(
+            randomization_config = schema.RandomizationDistributions(
                 **yaml.safe_load(self.render_settings_field.model.get_value_as_string())
             )
         except ValidationError as e:
@@ -113,7 +113,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         self.render_button.enabled = True
 
     async def replay_episode(
-        self, render_index: int, randomization_config: schema.DomainRandomization
+        self, render_index: int, randomization_config: schema.RandomizationDistributions
     ) -> None:
         # Get user inputs
         recordings_dir = Path(self.recordings_dir_field.model.get_value_as_string())
@@ -247,7 +247,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
 
     @staticmethod
     def _set_up_replicator(
-        config: schema.DomainRandomization,
+        config: schema.RandomizationDistributions,
         render_path: Path,
         textures_path: Path,
         camera_names: list[str],
