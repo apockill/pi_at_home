@@ -74,6 +74,10 @@ class RandomizationDistributions(BaseModel):
     min_render_fps: int = 10
     max_render_fps: int = 50
 
+    # Choose number of materials to randomize
+    min_materials: int = 1
+    max_materials: int = 50
+
     # Camera name -> randomization params
     # One is randomly chosen per full trajectory run
     camera_params: dict[str, list[CameraDistribution]] = {
