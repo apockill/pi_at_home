@@ -33,10 +33,14 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
                 )
 
             with ui.HStack(spacing=10):
-                ui.Label("Random Textures Directory:", width=150)
-                self.textures_dir_field = ui.StringField()
-                self.textures_dir_field.model.set_value(
-                    str(schema.DEFAULT_TEXTURES_DIR)
+                ui.Label("Mesh Textures Directory:", width=150)
+                self.mesh_textures_dir_field = ui.StringField()
+                self.mesh_textures_dir_field.model.set_value(
+                    str(schema.DEFAULT_MESH_TEXTURES_DIR)
+                )
+                self.skybox_textures_dir_field = ui.StringField()
+                self.skybox_textures_dir_field.model.set_value(
+                    str(schema.DEFAULT_SKYBOX_TEXTURES_DIR)
                 )
 
             # Episode Number Input
@@ -106,11 +110,17 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
 
         for i in range(num_renders):
             self.update_status(f"Starting render {i + 1} of {num_renders}...")
-            await self.replay_episode(
-                render_index=i, randomization_config=randomization_config
-            )
+            try:
+                await self.replay_episode(
+                    render_index=i, randomization_config=randomization_config
+                )
+            except Exception as e:
+                self.update_status(f"Failed to render: {e}")
+                raise
+            finally:
+                self.render_button.enabled = True
+
         self.update_status("All renders completed.")
-        self.render_button.enabled = True
 
     async def replay_episode(
         self, render_index: int, randomization_config: schema.RandomizationDistributions
@@ -148,6 +158,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         root_layer.subLayerPaths.append(str(traj_recording.scene_path))
 
         # Step 3: Set scene.usd as the authoring layer
+        #         Without this, timesteps don't seem to play when the timeline starts
         scene_layer = Sdf.Layer.FindOrOpen(str(traj_recording.scene_path))
         if scene_layer:
             stage.SetEditTarget(scene_layer)
@@ -166,6 +177,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             return
 
         # Step 5: Initialize Replicator and Create Render Products
+        self.update_status("Initializing replicator configuration...")
         self._set_up_replicator(
             config=randomization_config,
             camera_names=selected_cameras,
@@ -173,25 +185,15 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             render_path=path_utils.get_next_numbered_dir(
                 traj_recording.renders_dir, "render"
             ),
-            textures_path=Path(self.textures_dir_field.model.get_value_as_string()),
+            mesh_textures_path=Path(
+                self.mesh_textures_dir_field.model.get_value_as_string()
+            ),
+            skylight_textures_path=Path(
+                self.skybox_textures_dir_field.model.get_value_as_string()
+            ),
         )
 
-        # Step 6: Determine Frame Range from Timesteps USD
-        timesteps_layer = Sdf.Layer.FindOrOpen(str(traj_recording.timesteps_path))
-        if not timesteps_layer:
-            self.update_status(f"Failed to load {traj_recording.timesteps_path}.")
-            return
-
-        assert timesteps_layer.HasEndTimeCode()
-
-        time_codes = timesteps_layer.ListAllTimeSamples()
-        if not time_codes:
-            self.update_status(
-                f"No time samples found in {traj_recording.timesteps_path}."
-            )
-            return
-
-        # Step 7: Control Timeline Manually
+        # Step 6: Control Timeline Manually
         timeline = omni.timeline.get_timeline_interface()
         timeline.set_current_time(0.0)
         await omni.kit.app.get_app().next_update_async()
@@ -206,6 +208,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             timeline.set_current_time(frame / framerate)
             timeline.forward_one_frame()
             await omni.kit.app.get_app().next_update_async()
+
             self.update_status(
                 f"Rendering frame {frame}/{final_frame} of render {render_index + 1}"
             )
@@ -249,7 +252,8 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
     def _set_up_replicator(
         config: schema.RandomizationDistributions,
         render_path: Path,
-        textures_path: Path,
+        mesh_textures_path: Path,
+        skylight_textures_path: Path,
         camera_names: list[str],
         render_resolution: tuple[int, int],
     ):
@@ -276,26 +280,45 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             render_products.append((camera.GetName(), render_product))
 
         # Randomize textures of all prims
-        textures = [str(t) for t in path_utils.get_all_textures_in_dir(textures_path)]
-        prims_to_apply_materials = rep.get.prims(prim_types_exclusion=["Camera"])
+        mesh_textures = [
+            str(t) for t in path_utils.get_all_textures_in_dir(mesh_textures_path)
+        ]
+        prims_to_apply_materials = rep.get.mesh()
         random_material = rep.create.material_omnipbr(
             # Create random material properties
             diffuse=rep.distribution.uniform((0, 0, 0), (1, 1, 1)),
             roughness=rep.distribution.uniform(0, 1),
             metallic=rep.distribution.choice([0, 1]),
-            emissive_color=rep.distribution.uniform((0, 0, 0), (0, 0, 1)),
-            emissive_intensity=rep.distribution.uniform(0, 1000),
-            specular=rep.distribution.uniform(0, 1),
+            emissive_color=rep.distribution.uniform((0, 0, 0.5), (0, 0, 1)),
+            # emissive_intensity=rep.distribution.uniform(0, 1000),
             # Texturize the material properties
-            diffuse_texture=rep.distribution.choice(textures),
-            roughness_texture=rep.distribution.choice(textures),
-            metallic_texture=rep.distribution.choice(textures),
-            emissive_texture=rep.distribution.choice(textures),
+            diffuse_texture=rep.distribution.choice(mesh_textures),
+            roughness_texture=rep.distribution.choice(mesh_textures),
+            metallic_texture=rep.distribution.choice(mesh_textures),
+            emissive_texture=rep.distribution.choice(mesh_textures),
             count=random.randint(config.min_materials, config.max_materials),
         )
         rep.randomizer.materials(
             materials=random_material, input_prims=prims_to_apply_materials
         )
+
+        # Create a skybox with a texture
+        skylight_textures = [
+            str(t) for t in path_utils.get_all_textures_in_dir(skylight_textures_path)
+        ]
+        rep.create.light(
+            rotation=rep.distribution.uniform((0, -180, -180), (0, 180, 180)),
+            intensity=rep.distribution.normal(400, 100),
+            temperature=rep.distribution.normal(6500, 1000),
+            light_type="dome",
+            texture=rep.distribution.choice(skylight_textures),
+            name="Skybox",
+        )
+        with rep.get.light():
+            rep.modify.pose(
+                position=config.light_pos_offset,
+                rotation=config.light_rot_offset,
+            )
 
         # Create output directory for renders
         for camera_name, render_product in render_products:

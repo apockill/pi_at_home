@@ -6,7 +6,10 @@ from pydantic import BaseModel
 TIMESTEPS_FILENAME = "timesteps"  # usd
 SCENE_FILENAME = "scene"  # usd
 METADATA_FILENAME = "metadata.json"
-DEFAULT_TEXTURES_DIR = Path("/robot/isaac_src/assets/textures/512x512-photorealistic")
+DEFAULT_MESH_TEXTURES_DIR = Path(
+    "/robot/isaac_src/assets/textures/512x512-photorealistic"
+)
+DEFAULT_SKYBOX_TEXTURES_DIR = Path("/robot/isaac_src/assets/textures/skyboxes")
 DEFAULT_RECORDINGS_DIR = Path("/robot/synthetic-output/recordings/")
 
 BOUND = tuple[float, float, float]
@@ -77,6 +80,10 @@ class RandomizationDistributions(BaseModel):
     # Choose number of materials to randomize
     min_materials: int = 1
     max_materials: int = 50
+
+    # Choose how much to modify lighting position
+    light_pos_offset: tuple[float, float, float] = (0.1, 0.1, 0.1)
+    light_rot_offset: tuple[float, float, float] = (45, 45, 45)
 
     # Camera name -> randomization params
     # One is randomly chosen per full trajectory run
