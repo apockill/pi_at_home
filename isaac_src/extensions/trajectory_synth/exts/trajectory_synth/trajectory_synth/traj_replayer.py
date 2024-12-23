@@ -207,6 +207,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         for frame in range(final_frame):
             timeline.set_current_time(frame / framerate)
             timeline.forward_one_frame()
+            await rep.orchestrator.step_async()
             await omni.kit.app.get_app().next_update_async()
 
             self.update_status(
@@ -297,6 +298,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             metallic_texture=rep.distribution.choice(mesh_textures),
             emissive_texture=rep.distribution.choice(mesh_textures),
             count=random.randint(config.min_materials, config.max_materials),
+            project_uvw=True
         )
         rep.randomizer.materials(
             materials=random_material, input_prims=prims_to_apply_materials
