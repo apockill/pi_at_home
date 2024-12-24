@@ -291,14 +291,14 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
             roughness=rep.distribution.uniform(0, 1),
             metallic=rep.distribution.choice([0, 1]),
             emissive_color=rep.distribution.uniform((0, 0, 0.5), (0, 0, 1)),
-            # emissive_intensity=rep.distribution.uniform(0, 1000),
+            emissive_intensity=rep.distribution.uniform(0, 1000),
             # Texturize the material properties
             diffuse_texture=rep.distribution.choice(mesh_textures),
             roughness_texture=rep.distribution.choice(mesh_textures),
             metallic_texture=rep.distribution.choice(mesh_textures),
             emissive_texture=rep.distribution.choice(mesh_textures),
             count=random.randint(config.min_materials, config.max_materials),
-            project_uvw=True
+            project_uvw=True,
         )
         rep.randomizer.materials(
             materials=random_material, input_prims=prims_to_apply_materials
