@@ -11,9 +11,10 @@ def find_omniverse_apps():
     http = urllib3.PoolManager()
     try:
         r = http.request("GET", "http://127.0.0.1:33480/components")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(
-            f"Failed retrieving apps from an Omniverse Launcher, maybe it is not installed?\nError: {e}"
+            f"Failed retrieving apps from an Omniverse Launcher, maybe it is not "
+            f"installed?\nError: {e}"
         )
         sys.exit(1)
 
@@ -42,12 +43,14 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--path",
-        help="Path to Kit App installed from Omniverse Launcher, e.g.: 'C:/Users/bob/AppData/Local/ov/pkg/create-2021.3.4'",
+        help="Path to Kit App installed from Omniverse Launcher, e.g.: "
+        "'C:/Users/bob/AppData/Local/ov/pkg/create-2021.3.4'",
         required=False,
     )
     parser.add_argument(
         "--app",
-        help="Name of Kit App installed from Omniverse Launcher, e.g.: 'code', 'create'",
+        help="Name of Kit App installed from Omniverse Launcher, "
+        "e.g.: 'code', 'create'",
         required=False,
     )
     args = parser.parse_args()
@@ -58,7 +61,8 @@ if __name__ == "__main__":
         apps = find_omniverse_apps()
         if len(apps) == 0:
             print(
-                "Can't find any Omniverse Apps. Use Omniverse Launcher to install one. 'Code' is the recommended app for developers."
+                "Can't find any Omniverse Apps. Use Omniverse Launcher to install one. "
+                "'Code' is the recommended app for developers."
             )
             sys.exit(0)
 
@@ -72,7 +76,8 @@ if __name__ == "__main__":
             if selected_app not in apps:
                 choices = ", ".join(apps.keys())
                 print(
-                    f"Passed app: '{selected_app}' is not found. Specify one of the following found Apps: {choices}"
+                    f"Passed app: '{selected_app}' is not found. Specify one of the "
+                    f"following found Apps: {choices}"
                 )
                 sys.exit(0)
         else:
@@ -83,9 +88,9 @@ if __name__ == "__main__":
         print(f"\nSelected app: {selected_app}")
         _, path = apps[selected_app]
 
-    if not os.path.exists(path):
+    if not os.path.exists(path):  # noqa: PTH110
         print(f"Provided path doesn't exist: {path}")
     else:
-        SCRIPT_ROOT = os.path.dirname(os.path.realpath(__file__))
+        SCRIPT_ROOT = os.path.dirname(os.path.realpath(__file__))  # noqa: PTH120
         create_link(f"{SCRIPT_ROOT}/../../app", path)
         print("Success!")

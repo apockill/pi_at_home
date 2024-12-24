@@ -32,7 +32,7 @@ factors.
   - [ ] Create ROS service for starting/stopping data collection and serializing datasets
 - [ ] Create easy workflows for:
   - [ ] Record demonstrations with **real leader arm** and **simulation follower arm**
-  - [ ] Multiplex demonstrations using domain randomization, leveraging Replicator learnings above
+  - [x] Multiplex demonstrations using domain randomization, leveraging Replicator learnings above
   - [ ] Training models with mix of real and simulated data
 - [ ] Benchmark the sim2real gap with this project, publicize results to open source community
 - [ ] Add support for Koch arm and other open-source robot arm

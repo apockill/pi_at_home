@@ -16,7 +16,8 @@ class BaseRobotNode(HelpfulNode, ABC):
     urdf: type[MyArmCURDF] | type[MyArmMURDF]
 
     class Parameters(BaseModel):
-        joint_publish_hz: float = 20.0
+        # This will run faster than the read/write speed
+        joint_publish_hz: float = 100.0
         robot_protocol: type[BaseRobotProtocol]
 
         # In joint units

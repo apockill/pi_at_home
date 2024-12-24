@@ -20,7 +20,8 @@ __pycache__/
 .env
 
 # Persistent data
-.docker_volumes
+.docker_volumes/
+synthetic-output/
 
 # URDF
 *.part

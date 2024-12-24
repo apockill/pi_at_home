@@ -14,7 +14,7 @@ def lint_darglint(fix: bool) -> None:
         "sphinx",
         "--ignore-regex",
         "^test.*",
-        Path(),
+        Path("pkgs/"),
     ]
     if not fix:
         run_command(cmd)
