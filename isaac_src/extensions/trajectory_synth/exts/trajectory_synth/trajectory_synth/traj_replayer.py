@@ -1,4 +1,5 @@
 import asyncio
+import json
 import random
 from pathlib import Path
 from typing import Literal
@@ -136,16 +137,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         ]
 
         episode_path = recordings_dir / f"episode_{episode_number:03d}"
-        if not episode_path.is_dir():
-            self.update_status("Invalid recordings directory or episode number.")
-            return
-
-        # Construct paths
-        try:
-            traj_recording = schema.TrajectoryRecording(episode_path)
-        except FileNotFoundError:
-            self.update_status("Invalid trajectory recording, file missing.")
-            return
+        traj_recording = schema.TrajectoryRecording(episode_path)
 
         # Step 1: New Scene
         omni.usd.get_context().new_stage()
@@ -160,16 +152,8 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         # Step 3: Set scene.usd as the authoring layer
         #         Without this, timesteps don't seem to play when the timeline starts
         scene_layer = Sdf.Layer.FindOrOpen(str(traj_recording.scene_path))
-        if scene_layer:
-            stage.SetEditTarget(scene_layer)
-            self.update_status(
-                f"Set {traj_recording.scene_path} as the authoring layer."
-            )
-        else:
-            self.update_status(
-                f"Failed to set {traj_recording.scene_path} as the authoring layer."
-            )
-            return
+        stage.SetEditTarget(scene_layer)
+        self.update_status(f"Set {traj_recording.scene_path} as the authoring layer.")
 
         # Step 4: Validate Cameras
         selected_cameras = self.get_cameras_from_names(selected_camera_names)
