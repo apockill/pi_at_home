@@ -188,14 +188,14 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         end_time = traj_recording.metadata.end_time
         final_frame = int(round(end_time * framerate))
 
-        for frame in range(final_frame):
-            timeline.set_current_time(frame / framerate)
+        for frame_index in range(final_frame):
+            timeline.set_current_time(frame_index / framerate)
             timeline.forward_one_frame()
             await rep.orchestrator.step_async()
             await omni.kit.app.get_app().next_update_async()
 
             self.update_status(
-                f"Rendering frame {frame}/{final_frame} of render {render_index + 1}"
+                f"Rendering frame {frame_index}/{final_frame} of render {render_index}"
             )
 
         timeline.stop()
