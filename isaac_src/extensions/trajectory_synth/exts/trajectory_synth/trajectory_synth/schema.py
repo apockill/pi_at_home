@@ -13,6 +13,16 @@ DEFAULT_RECORDINGS_DIR = Path("/robot/synthetic-output/recordings/")
 BOUND = tuple[float, float, float]
 
 
+class RobotAttributes(BaseModel):
+    root_joint: str
+    ros_namespace: str
+    joint_topic: str = "current_joint_states"
+
+    @property
+    def name(self):
+        return self.ros_namespace.strip("/")
+
+
 class TrajectoryRecordingMeta(BaseModel):
     start_time: float = 0.0
     end_time: float
