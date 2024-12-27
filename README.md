@@ -46,10 +46,11 @@ language-grounded interaction with the robot.
 
 ---
 
-## Running This Project
+## Capabilities
 
-To get started with the project, try using the `teleoperation` launch profile:
-
+### Simple Teleoperation
+The simplest thing you can do is teleoperation with your robot arm copied in Isaac Sim.
+To do that, run: 
 ```shell
 docker/launch teleop_myarm
 ```
@@ -57,6 +58,27 @@ This will automatically build and run everything needed for the project.
 Then, open http://localhost/ on your browser to view the project logs.
 
 For in-depth documentation on the repository features, read the [About Template](docs/about_template.md) documentation.
+
+### Synthetic Data Generation
+
+There are three steps to synthetic data generation. First, open up the `synthetic_generation` launch profile:
+
+```shell
+docker/launch synthetic_generation
+```
+
+This will spin up Isaac Sim. Go to Extensions->3rd Party and turn on the "Trajectory Synth" extension.
+This extension is custom built, and stored in `isaac_src/extensions`. Next, plug in your robot. When using a real world robot, you will need to add a `parameters.overrides.yaml` file to the 
+root of `launch-profiles/synthetic_generation` to configure your specific robots drivers.
+
+Next, record an episode! Configure the "Trajectory Recorder" window, and click "Start Recording":
+![traj_recording.png](docs/static/traj_recording.png)
+
+Once you've recorded an episode, you can re-render with domain randomization using the "Trajectory Renderer" extension:
+![traj_replay.png](docs/static/traj_replay.png)
+
+This will generate a configurable number of episodes while varying everything possible-
+including joint interpolation to move the robot faster or slower than the original demonstration.
 
 ### Dependencies
 
