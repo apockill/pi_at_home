@@ -6,9 +6,10 @@ authors = ["apockill <apocthiel@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.12.0,<4.0"
+python = ">=3.12.0,<3.13"
 acton-ai = "^0.3.0"
 pydantic = "^2.10.3"
+lerobot = {git = "https://github.com/huggingface/lerobot.git", rev="59e2757"}
 
 [tool.poetry.scripts]
 # Each entry here will create an executable which can be referenced in launchfiles
