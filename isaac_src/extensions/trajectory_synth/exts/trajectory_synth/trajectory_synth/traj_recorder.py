@@ -3,10 +3,25 @@ from pathlib import Path
 
 import omni.ext
 import omni.graph.core as og
+import omni.graph.core.types as ot
 import omni.kit.commands
 from omni import ui
 
 from . import path_utils, schema
+
+
+@og.create_node_type(unique_name="CustomJointStateProcessor")
+def custom_joint_state_processor(
+    input_joint_names: ot.tokenarray,
+    input_positions: ot.doublearray,
+    exec_in: ot.execution,
+) -> ot.string:
+    """Custom node to process joint state data.
+
+    In the future this could be used to record joint state data to a file. Currently
+    it's a proof of concept that doesn't do anything, but is hooked up to the graph.
+    """
+    return ""
 
 
 class TrajectoryRecorderExtension(omni.ext.IExt):
@@ -189,6 +204,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             logging.info(f"Removing existing OmniGraph at {graph_path}")
             omni.kit.commands.execute("DeletePrims", paths=[graph_path])
 
+        # Create and configure the graph
         graph = {
             og.Controller.Keys.CREATE_NODES: [
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
@@ -200,10 +216,12 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
                     "ArticulationController",
                     "omni.isaac.core_nodes.IsaacArticulationController",
                 ),
+                ("ProcessJointState", "CustomJointStateProcessor"),
             ],
             og.Controller.Keys.CONNECT: [
                 ("OnPlaybackTick.outputs:tick", "SubscribeJointState.inputs:execIn"),
                 ("OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"),
+                ("OnPlaybackTick.outputs:tick", "ProcessJointState.inputs:exec_in"),
                 (
                     "SubscribeJointState.outputs:jointNames",
                     "ArticulationController.inputs:jointNames",
@@ -219,6 +237,14 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
                 (
                     "SubscribeJointState.outputs:effortCommand",
                     "ArticulationController.inputs:effortCommand",
+                ),
+                (
+                    "SubscribeJointState.outputs:jointNames",
+                    "ProcessJointState.inputs:input_joint_names",
+                ),
+                (
+                    "SubscribeJointState.outputs:positionCommand",
+                    "ProcessJointState.inputs:input_positions",
                 ),
             ],
             og.Controller.Keys.SET_VALUES: [
