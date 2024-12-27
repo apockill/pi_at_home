@@ -33,6 +33,8 @@ services:
       - type: volume
         source: ros-nodes-build-cache
         target: /robot/build
+      # Commonly written to by the isaac container
+      - "./synthetic-output:/robot/synthetic-output:rw"
     environment:
       # Necessary for display passthrough
       DISPLAY: $DISPLAY
