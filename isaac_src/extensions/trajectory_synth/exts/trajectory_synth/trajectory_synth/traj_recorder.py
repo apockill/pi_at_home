@@ -11,8 +11,6 @@ from omni import ui
 from . import path_utils, schema
 
 
-
-
 class TrajectoryRecorderExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         logging.info("[trajectory_synth] trajectory_synth startup")
@@ -126,6 +124,9 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         )
 
         # Save the current scene, so the replaying code knows the exact scene used
+        # Always delete the existing omnigraphs, since we don't want the saved scene to
+        # include the ROS joint -> articulation controller graph
+        self.clear_omni_graphs()
         stage = omni.usd.get_context().get_stage()
         scene_file_path = self.current_episode.scene_path
         stage.GetRootLayer().Export(str(scene_file_path))
@@ -183,16 +184,30 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             self.update_status("Recording failed validation. Somethings wrong!")
             return
 
+    def clear_omni_graphs(self):
+        """Remove existing OmniGraph if it exists"""
+        for graph_path in [
+            self.leader_robot_attributes.omnigraph_path,
+            self.follower_robot_attributes.omnigraph_path,
+        ]:
+            stage = omni.usd.get_context().get_stage()
+            existing_graph = stage.GetPrimAtPath(graph_path)
+            if existing_graph and existing_graph.IsValid():
+                logging.info(f"Removing existing OmniGraph at {graph_path}")
+                omni.kit.commands.execute("DeletePrims", paths=[graph_path])
+
     def set_up_omnigraph(self, robot_attributes: schema.RobotAttributes):
+        self.clear_omni_graphs()
 
         # Create a custom node to process joint state data with a unique name,
         # so we can reinitialize the extension without conflicts
         recorder_name = f"JointRecorder_{random.randint(0, 10000000)}"
+
         @og.create_node_type(unique_name=recorder_name)
         def custom_joint_state_processor(
-                input_joint_names: ot.tokenarray,
-                input_positions: ot.doublearray,
-                exec_in: ot.execution,
+            input_joint_names: ot.tokenarray,
+            input_positions: ot.doublearray,
+            exec_in: ot.execution,
         ) -> ot.string:
             """Custom node to process joint state data.
 
@@ -201,15 +216,6 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             to the graph.
             """
             return ""
-
-        graph_path = rf"/World/RecorderActionGraphs/{robot_attributes.name}"
-
-        # Remove existing OmniGraph if it exists
-        stage = omni.usd.get_context().get_stage()
-        existing_graph = stage.GetPrimAtPath(graph_path)
-        if existing_graph and existing_graph.IsValid():
-            logging.info(f"Removing existing OmniGraph at {graph_path}")
-            omni.kit.commands.execute("DeletePrims", paths=[graph_path])
 
         # Create and configure the graph
         graph = {
@@ -268,7 +274,11 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         }
 
         og.Controller.edit(
-            {"graph_path": graph_path, "evaluator_name": "execution"}, graph
+            {
+                "graph_path": robot_attributes.omnigraph_path,
+                "evaluator_name": "execution",
+            },
+            graph,
         )
 
     def update_status(self, message):
