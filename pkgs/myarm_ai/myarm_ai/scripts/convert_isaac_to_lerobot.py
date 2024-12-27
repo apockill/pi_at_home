@@ -1,9 +1,11 @@
+import random
 from argparse import ArgumentParser
 from pathlib import Path
 
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 
 from myarm_ai.datasets import TrajectorySynthDatasetReader
+from myarm_ai.datasets.lerobot import DEFAULT_MYARM_FEATURES
 
 
 def convert(input_dataset: Path, output_dir: Path, fps: int) -> None:
