@@ -13,13 +13,21 @@ from .episode import EpisodeRecording
 
 
 class TrajectoryRecorderExtension(omni.ext.IExt):
+    # State Variables
+    recording: bool
+    current_episode: EpisodeRecording | None
+    current_joint_recording: schemas.EpisodeJointsRecording | None
+
     def on_startup(self, ext_id):
         logging.info("[trajectory_synth] trajectory_synth startup")
 
         # State Variables
         self.recording = False
-        self.scene_loaded = False
         self.recordings_dir = schemas.DEFAULT_RECORDINGS_DIR
+
+        # Set in 'start_recording'
+        self.current_episode = None
+        self.current_joint_recording = None
 
         # UI Window
         self._window = ui.Window("Trajectory Recorder", width=400, height=400)
@@ -123,6 +131,16 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             path_utils.get_next_numbered_dir(self.recordings_dir, "episode"),
             expect_exists=False,
         )
+        self.current_joint_recording = schemas.EpisodeJointsRecording(
+            robots={
+                self.leader_robot_attributes.name: schemas.RobotRecording(
+                    root_joint=self.leader_robot_attributes.root_joint
+                ),
+                self.follower_robot_attributes.name: schemas.RobotRecording(
+                    root_joint=self.follower_robot_attributes.root_joint
+                ),
+            }
+        )
 
         # Save the current scene, so the replaying code knows the exact scene used
         # Always delete the existing omnigraphs, since we don't want the saved scene to
@@ -177,6 +195,11 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         metadata = schemas.TrajectoryRecordingMeta(end_time=timeline.get_current_time())
         metadata_file_path.write_text(metadata.model_dump_json())
 
+        # Write the joint recordings file
+        self.current_episode.joints_recording_path.write_text(
+            self.current_joint_recording.model_dump_json()
+        )
+
         # Create the 'renders' directory, then validate the recording
         self.current_episode.renders_dir.mkdir(parents=True, exist_ok=False)
 
@@ -187,18 +210,18 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
 
     def clear_omni_graphs(self):
         """Remove existing OmniGraph if it exists"""
+        stage = omni.usd.get_context().get_stage()
+
         for graph_path in [
             self.leader_robot_attributes.omnigraph_path,
             self.follower_robot_attributes.omnigraph_path,
         ]:
-            stage = omni.usd.get_context().get_stage()
             existing_graph = stage.GetPrimAtPath(graph_path)
             if existing_graph and existing_graph.IsValid():
                 logging.info(f"Removing existing OmniGraph at {graph_path}")
                 omni.kit.commands.execute("DeletePrims", paths=[graph_path])
 
     def set_up_omnigraph(self, robot_attributes: schemas.RobotAttributes):
-        self.clear_omni_graphs()
 
         # Create a custom node to process joint state data with a unique name,
         # so we can reinitialize the extension without conflicts
@@ -208,6 +231,8 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         def custom_joint_state_processor(
             input_joint_names: ot.tokenarray,
             input_positions: ot.doublearray,
+            timestamp: ot.double,
+            ros_timestamp: ot.double,
             exec_in: ot.execution,
         ) -> ot.string:
             """Custom node to process joint state data.
@@ -216,6 +241,15 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             Currently it's a proof of concept that doesn't do anything, but is hooked up
             to the graph.
             """
+            robot_recording = self.current_joint_recording.robots[robot_attributes.name]
+            robot_recording.joint_names = input_joint_names
+            robot_recording.time_samples.append(
+                schemas.RobotTimeSample(
+                    joint_positions=input_positions,
+                    isaac_time=timestamp,
+                    ros_time=ros_timestamp,
+                )
+            )
             return ""
 
         # Create and configure the graph
@@ -259,6 +293,11 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
                 (
                     "SubscribeJointState.outputs:positionCommand",
                     "ProcessJointState.inputs:input_positions",
+                ),
+                ("SubscribeJointState.outputs:timeStamp", "ProcessJointState.inputs:ros_timestamp"),
+                (
+                    "OnPlaybackTick.outputs:time",
+                    "ProcessJointState.inputs:timestamp",
                 ),
             ],
             og.Controller.Keys.SET_VALUES: [

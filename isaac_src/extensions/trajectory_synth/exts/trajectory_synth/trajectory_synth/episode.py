@@ -22,6 +22,7 @@ class EpisodeRecording:
                 self.scene_path.is_file(),
                 self.timesteps_path.is_file(),
                 self.renders_dir.is_dir(),
+                self.joints_recording_path.is_file(),
             ]
         )
 
