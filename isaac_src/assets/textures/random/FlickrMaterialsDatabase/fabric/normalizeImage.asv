@@ -1,0 +1,12 @@
+% function to normalize images
+srcPath = 'D:\Workstation\CVPR2010\Supplementary\image\foliage\';
+
+imagelist = dir(fullfile(srcPath,'*.jpg'));
+
+for i = 1:length(imagelist)
+    im = imread(fullfile(srcPath,imagelist(i).name));
+    Max = max(im(:));
+    Min = min(im(:));
+    Mean = meax(im(:));
+    im = (im-Mean)/Mean*2/(Max-Min)
+end

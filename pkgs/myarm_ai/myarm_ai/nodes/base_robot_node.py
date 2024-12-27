@@ -62,6 +62,7 @@ class BaseRobotNode(HelpfulNode, ABC):
         }
 
         joint_state = JointState()
+        joint_state.header.stamp = self.get_clock().now().to_msg()
         joint_state.name = list(joint_positions.keys())
         joint_state.position = list(joint_positions.values())
         self.joint_state_publisher.publish(joint_state)
