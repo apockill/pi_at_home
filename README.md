@@ -80,6 +80,13 @@ Once you've recorded an episode, you can re-render with domain randomization usi
 This will generate a configurable number of episodes while varying everything possible-
 including joint interpolation to move the robot faster or slower than the original demonstration.
 
+Finally, convert the rendered episodes to a dataset:
+```shell
+docker/run convert_isaac_to_lerobot \
+  --episodes_dir /robot/synthetic-output/recordings \
+  --output_dir /robot/synthetic-output/lerobot-fmt
+```
+
 ### Dependencies
 
 - [Docker](https://docs.docker.com/get-docker/), and optionally [Nvidia Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) for hardware acceleration.
