@@ -1,4 +1,5 @@
 import logging
+import random
 from pathlib import Path
 
 import omni.ext
@@ -10,18 +11,6 @@ from omni import ui
 from . import path_utils, schema
 
 
-@og.create_node_type(unique_name="CustomJointStateProcessor")
-def custom_joint_state_processor(
-    input_joint_names: ot.tokenarray,
-    input_positions: ot.doublearray,
-    exec_in: ot.execution,
-) -> ot.string:
-    """Custom node to process joint state data.
-
-    In the future this could be used to record joint state data to a file. Currently
-    it's a proof of concept that doesn't do anything, but is hooked up to the graph.
-    """
-    return ""
 
 
 class TrajectoryRecorderExtension(omni.ext.IExt):
@@ -195,6 +184,24 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             return
 
     def set_up_omnigraph(self, robot_attributes: schema.RobotAttributes):
+
+        # Create a custom node to process joint state data with a unique name,
+        # so we can reinitialize the extension without conflicts
+        recorder_name = f"JointRecorder_{random.randint(0, 10000000)}"
+        @og.create_node_type(unique_name=recorder_name)
+        def custom_joint_state_processor(
+                input_joint_names: ot.tokenarray,
+                input_positions: ot.doublearray,
+                exec_in: ot.execution,
+        ) -> ot.string:
+            """Custom node to process joint state data.
+
+            In the future this could be used to record joint state data to a file.
+            Currently it's a proof of concept that doesn't do anything, but is hooked up
+            to the graph.
+            """
+            return ""
+
         graph_path = rf"/World/RecorderActionGraphs/{robot_attributes.name}"
 
         # Remove existing OmniGraph if it exists
@@ -216,7 +223,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
                     "ArticulationController",
                     "omni.isaac.core_nodes.IsaacArticulationController",
                 ),
-                ("ProcessJointState", "CustomJointStateProcessor"),
+                ("ProcessJointState", recorder_name),
             ],
             og.Controller.Keys.CONNECT: [
                 ("OnPlaybackTick.outputs:tick", "SubscribeJointState.inputs:execIn"),
