@@ -13,7 +13,7 @@ from omni import ui
 from pxr import Sdf
 from pydantic import ValidationError
 
-from . import path_utils, schema
+from . import path_utils, schemas
 from .episode import EpisodeRecording
 
 
@@ -30,18 +30,18 @@ class TrajectoryRendererExtension(omni.ext.IExt):
                 ui.Label("Recordings Directory:", width=150)
                 self.recordings_dir_field = ui.StringField()
                 self.recordings_dir_field.model.set_value(
-                    str(schema.DEFAULT_RECORDINGS_DIR)
+                    str(schemas.DEFAULT_RECORDINGS_DIR)
                 )
 
             with ui.HStack(spacing=10):
                 ui.Label("Mesh Textures Directory:", width=150)
                 self.mesh_textures_dir_field = ui.StringField()
                 self.mesh_textures_dir_field.model.set_value(
-                    str(schema.DEFAULT_MESH_TEXTURES_DIR)
+                    str(schemas.DEFAULT_MESH_TEXTURES_DIR)
                 )
                 self.skybox_textures_dir_field = ui.StringField()
                 self.skybox_textures_dir_field.model.set_value(
-                    str(schema.DEFAULT_SKYBOX_TEXTURES_DIR)
+                    str(schemas.DEFAULT_SKYBOX_TEXTURES_DIR)
                 )
 
             # Episode Number Input
@@ -79,7 +79,9 @@ class TrajectoryRendererExtension(omni.ext.IExt):
             # Render Settings
             with ui.CollapsableFrame("Randomization Settings", height=200):
                 self.render_settings_field = ui.StringField(multiline=True)
-                default_randomization = schema.RandomizationDistributions().model_dump()
+                default_randomization = (
+                    schemas.RandomizationDistributions().model_dump()
+                )
                 self.render_settings_field.model.set_value(
                     yaml.safe_dump(default_randomization, sort_keys=False)
                 )
@@ -101,7 +103,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
 
         # Load DomainRandomization from UI
         try:
-            randomization_config = schema.RandomizationDistributions(
+            randomization_config = schemas.RandomizationDistributions(
                 **yaml.safe_load(self.render_settings_field.model.get_value_as_string())
             )
         except ValidationError as e:
@@ -124,7 +126,9 @@ class TrajectoryRendererExtension(omni.ext.IExt):
         self.update_status("All renders completed.")
 
     async def replay_episode(
-        self, render_index: int, randomization_config: schema.RandomizationDistributions
+        self,
+        render_index: int,
+        randomization_config: schemas.RandomizationDistributions,
     ) -> None:
         # Get user inputs
         recordings_dir = Path(self.recordings_dir_field.model.get_value_as_string())
@@ -235,7 +239,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
 
     @staticmethod
     def _set_up_replicator(
-        config: schema.RandomizationDistributions,
+        config: schemas.RandomizationDistributions,
         render_path: Path,
         mesh_textures_path: Path,
         skylight_textures_path: Path,

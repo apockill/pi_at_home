@@ -1,35 +1,7 @@
-from pathlib import Path
-
 import omni.replicator.core as rep
 from pydantic import BaseModel
 
-TIMESTEPS_FILENAME = "timesteps"  # usd
-SCENE_FILENAME = "scene"  # usd
-METADATA_FILENAME = "metadata.json"
-DEFAULT_MESH_TEXTURES_DIR = Path("/robot/isaac_src/assets/textures/random")
-DEFAULT_SKYBOX_TEXTURES_DIR = Path("/robot/isaac_src/assets/textures/skyboxes")
-DEFAULT_RECORDINGS_DIR = Path("/robot/synthetic-output/recordings/")
-RECORDER_ACTION_GRAPH_PATH = "/World/RecorderActionGraphs"
-BOUND = tuple[float, float, float]
-
-
-class RobotAttributes(BaseModel):
-    root_joint: str
-    ros_namespace: str
-    joint_topic: str = "current_joint_states"
-
-    @property
-    def name(self):
-        return self.ros_namespace.strip("/")
-
-    @property
-    def omnigraph_path(self):
-        return f"{RECORDER_ACTION_GRAPH_PATH}/{self.name}"
-
-
-class TrajectoryRecordingMeta(BaseModel):
-    start_time: float = 0.0
-    end_time: float
+from .constants import BOUND
 
 
 class CameraDistribution(BaseModel):

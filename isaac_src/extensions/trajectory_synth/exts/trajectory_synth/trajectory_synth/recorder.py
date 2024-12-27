@@ -8,7 +8,7 @@ import omni.graph.core.types as ot
 import omni.kit.commands
 from omni import ui
 
-from . import path_utils, schema
+from . import path_utils, schemas
 from .episode import EpisodeRecording
 
 
@@ -19,7 +19,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         # State Variables
         self.recording = False
         self.scene_loaded = False
-        self.recordings_dir = schema.DEFAULT_RECORDINGS_DIR
+        self.recordings_dir = schemas.DEFAULT_RECORDINGS_DIR
 
         # UI Window
         self._window = ui.Window("Trajectory Recorder", width=400, height=400)
@@ -55,7 +55,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
     ):
         """Dynamically add UI fields for a robot's attributes."""
         section_name = f"{robot_name} Controller Attributes"
-        robot_attrs = schema.RobotAttributes(
+        robot_attrs = schemas.RobotAttributes(
             root_joint=default_root_joint, ros_namespace=default_ros_namespace
         )
         with ui.CollapsableFrame(section_name, height=200), ui.VStack(spacing=5):
@@ -152,7 +152,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             apply_root_anim=False,
             increment_name=False,
             record_folder=str(self.current_episode.directory),
-            take_name=schema.TIMESTEPS_FILENAME,
+            take_name=schemas.TIMESTEPS_FILENAME,
         )
 
         self.recording = True
@@ -174,7 +174,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
 
         # Write the metadata file
         metadata_file_path = self.current_episode.metadata_path
-        metadata = schema.TrajectoryRecordingMeta(end_time=timeline.get_current_time())
+        metadata = schemas.TrajectoryRecordingMeta(end_time=timeline.get_current_time())
         metadata_file_path.write_text(metadata.model_dump_json())
 
         # Create the 'renders' directory, then validate the recording
@@ -197,7 +197,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
                 logging.info(f"Removing existing OmniGraph at {graph_path}")
                 omni.kit.commands.execute("DeletePrims", paths=[graph_path])
 
-    def set_up_omnigraph(self, robot_attributes: schema.RobotAttributes):
+    def set_up_omnigraph(self, robot_attributes: schemas.RobotAttributes):
         self.clear_omni_graphs()
 
         # Create a custom node to process joint state data with a unique name,
