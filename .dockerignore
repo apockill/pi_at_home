@@ -4,3 +4,8 @@
 .docker_cache
 .mypy_cache
 pkgs/*/*_test
+isaac_src
+synthetic-output
+docs
+.idea
+.ruff_cache
