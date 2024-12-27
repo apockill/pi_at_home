@@ -16,13 +16,13 @@ from pydantic import ValidationError
 from . import path_utils, schema
 
 
-class TrajectoryReplayerExtension(omni.ext.IExt):
+class TrajectoryRendererExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
-        print("[trajectory_synth] trajectory_replayer startup")
+        print("[trajectory_synth] trajectory_renderer startup")
         self._build_ui()
 
     def _build_ui(self):
-        self._window = ui.Window("Trajectory Replayer", width=400, height=500)
+        self._window = ui.Window("Trajectory Renderer", width=400, height=500)
         with self._window.frame, ui.VStack(spacing=10):
             # Recordings Directory Input
             with ui.HStack(spacing=10):
@@ -230,7 +230,7 @@ class TrajectoryReplayerExtension(omni.ext.IExt):
         ]
 
     def on_shutdown(self):
-        print("[trajectory_synth] trajectory_replayer shutdown")
+        print("[trajectory_synth] trajectory_renderer shutdown")
 
     @staticmethod
     def _set_up_replicator(

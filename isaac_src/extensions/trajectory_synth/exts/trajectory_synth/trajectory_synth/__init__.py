@@ -1,2 +1,2 @@
-from .traj_recorder import TrajectoryRecorderExtension
-from .traj_replayer import TrajectoryReplayerExtension
+from .recorder import TrajectoryRecorderExtension
+from .renderer import TrajectoryRendererExtension
