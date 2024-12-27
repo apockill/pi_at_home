@@ -15,6 +15,7 @@ lerobot = {git = "https://github.com/huggingface/lerobot.git", rev="59e2757"}
 # Each entry here will create an executable which can be referenced in launchfiles
 follower_robot = "myarm_ai.nodes.follower_robot:main"
 leader_robot = "myarm_ai.nodes.leader_robot:main"
+convert_isaac_to_lerobot = "myarm_ai.scripts.convert_isaac_to_lerobot:main"
 
 [tool.colcon-poetry-ros.data-files]
 "share/ament_index/resource_index/packages" = ["resource/myarm_ai"]
