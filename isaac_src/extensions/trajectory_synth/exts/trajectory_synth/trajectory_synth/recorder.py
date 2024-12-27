@@ -240,6 +240,10 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
             Currently it's a proof of concept that doesn't do anything, but is hooked up
             to the graph.
             """
+            if len(input_positions) == 0:
+                logging.debug("No joint positions received from ROS yet.")
+                return ""
+
             robot_recording = self.current_joint_recording.robots[robot_attributes.name]
             robot_recording.joint_names = input_joint_names
             robot_recording.time_samples.append(

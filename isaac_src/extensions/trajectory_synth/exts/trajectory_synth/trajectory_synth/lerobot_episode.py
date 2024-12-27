@@ -96,7 +96,6 @@ class LeRobotEpisodeRecording:
                     j0 + ratio * (j1 - j0)
                     for j0, j1 in zip(joints0, joints1, strict=True)
                 ]
-                print(f"{interp_joints=} {joints0=} {joints1=}")
                 return interp_joints
 
         # Fallback (should not happen if times cover the entire range)
