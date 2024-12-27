@@ -9,7 +9,7 @@ METADATA_FILENAME = "metadata.json"
 DEFAULT_MESH_TEXTURES_DIR = Path("/robot/isaac_src/assets/textures/random")
 DEFAULT_SKYBOX_TEXTURES_DIR = Path("/robot/isaac_src/assets/textures/skyboxes")
 DEFAULT_RECORDINGS_DIR = Path("/robot/synthetic-output/recordings/")
-
+RECORDER_ACTION_GRAPH_PATH = "/World/RecorderActionGraphs"
 BOUND = tuple[float, float, float]
 
 
@@ -21,6 +21,10 @@ class RobotAttributes(BaseModel):
     @property
     def name(self):
         return self.ros_namespace.strip("/")
+
+    @property
+    def omnigraph_path(self):
+        return f"{RECORDER_ACTION_GRAPH_PATH}/{self.name}"
 
 
 class TrajectoryRecordingMeta(BaseModel):
