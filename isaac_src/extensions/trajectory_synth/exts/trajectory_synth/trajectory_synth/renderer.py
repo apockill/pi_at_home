@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from . import path_utils, schemas
 from .episode import EpisodeRecording
+from .lerobot_episode import LeRobotEpisodeRecording
 
 
 class TrajectoryRendererExtension(omni.ext.IExt):
@@ -135,13 +136,20 @@ class TrajectoryRendererExtension(omni.ext.IExt):
         episode_number = self.episode_number_field.model.get_value_as_int()
         resolution_width = self.resolution_width_field.model.get_value_as_int()
         resolution_height = self.resolution_height_field.model.get_value_as_int()
+
+        # Create paths and recording objects
+        episode_path = recordings_dir / f"episode_{episode_number:03d}"
+        traj_recording = EpisodeRecording(episode_path)
+        render_path = path_utils.get_next_numbered_dir(
+            traj_recording.renders_dir, "render"
+        )
+        joints_recording = LeRobotEpisodeRecording(
+            render_path, traj_recording.joints_recording
+        )
         selected_camera_names = [
             name.strip()
             for name in self.camera_selector.model.get_value_as_string().split(",")
         ]
-
-        episode_path = recordings_dir / f"episode_{episode_number:03d}"
-        traj_recording = EpisodeRecording(episode_path)
 
         # Step 1: New Scene
         omni.usd.get_context().new_stage()
@@ -170,9 +178,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
             config=randomization_config,
             camera_names=selected_cameras,
             render_resolution=(resolution_width, resolution_height),
-            render_path=path_utils.get_next_numbered_dir(
-                traj_recording.renders_dir, "render"
-            ),
+            render_path=render_path,
             mesh_textures_path=Path(
                 self.mesh_textures_dir_field.model.get_value_as_string()
             ),
@@ -193,17 +199,21 @@ class TrajectoryRendererExtension(omni.ext.IExt):
         final_frame = int(round(end_time * framerate))
 
         for frame_index in range(final_frame):
-            timeline.set_current_time(frame_index / framerate)
+            current_time = frame_index / framerate
+            timeline.set_current_time(current_time)
             timeline.forward_one_frame()
             await rep.orchestrator.step_async()
             await omni.kit.app.get_app().next_update_async()
 
+            joints_recording.add_timestep(current_time)
             self.update_status(
                 f"Rendering frame {frame_index}/{final_frame} of render {render_index}"
             )
 
         timeline.stop()
         await omni.kit.app.get_app().next_update_async()
+
+        joints_recording.save()
 
         self.update_status(f"Render {render_index + 1} completed.")
 

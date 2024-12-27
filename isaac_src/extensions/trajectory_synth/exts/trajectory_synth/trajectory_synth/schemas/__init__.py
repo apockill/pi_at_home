@@ -11,6 +11,7 @@ from .constants import (
 from .domain_randomization import CameraDistribution, RandomizationDistributions
 from .episode_files import (
     EpisodeJointsRecording,
+    LeRobotTimestep,
     RobotRecording,
     RobotTimeSample,
     TrajectoryRecordingMeta,

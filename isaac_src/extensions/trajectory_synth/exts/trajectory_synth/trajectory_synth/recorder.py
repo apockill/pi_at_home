@@ -222,7 +222,6 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
                 omni.kit.commands.execute("DeletePrims", paths=[graph_path])
 
     def set_up_omnigraph(self, robot_attributes: schemas.RobotAttributes):
-
         # Create a custom node to process joint state data with a unique name,
         # so we can reinitialize the extension without conflicts
         recorder_name = f"JointRecorder_{random.randint(0, 10000000)}"
@@ -294,7 +293,10 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
                     "SubscribeJointState.outputs:positionCommand",
                     "ProcessJointState.inputs:input_positions",
                 ),
-                ("SubscribeJointState.outputs:timeStamp", "ProcessJointState.inputs:ros_timestamp"),
+                (
+                    "SubscribeJointState.outputs:timeStamp",
+                    "ProcessJointState.inputs:ros_timestamp",
+                ),
                 (
                     "OnPlaybackTick.outputs:time",
                     "ProcessJointState.inputs:timestamp",
