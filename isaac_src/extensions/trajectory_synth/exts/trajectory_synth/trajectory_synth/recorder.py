@@ -9,6 +9,7 @@ import omni.kit.commands
 from omni import ui
 
 from . import path_utils, schema
+from .episode import EpisodeRecording
 
 
 class TrajectoryRecorderExtension(omni.ext.IExt):
@@ -118,7 +119,7 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         self.recordings_dir.mkdir(parents=True, exist_ok=True)
 
         # Create a new episode directory
-        self.current_episode = schema.TrajectoryRecording(
+        self.current_episode = EpisodeRecording(
             path_utils.get_next_numbered_dir(self.recordings_dir, "episode"),
             expect_exists=False,
         )

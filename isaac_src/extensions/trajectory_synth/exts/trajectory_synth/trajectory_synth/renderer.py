@@ -14,6 +14,7 @@ from pxr import Sdf
 from pydantic import ValidationError
 
 from . import path_utils, schema
+from .episode import EpisodeRecording
 
 
 class TrajectoryRendererExtension(omni.ext.IExt):
@@ -136,7 +137,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
         ]
 
         episode_path = recordings_dir / f"episode_{episode_number:03d}"
-        traj_recording = schema.TrajectoryRecording(episode_path)
+        traj_recording = EpisodeRecording(episode_path)
 
         # Step 1: New Scene
         omni.usd.get_context().new_stage()
