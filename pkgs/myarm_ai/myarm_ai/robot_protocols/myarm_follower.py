@@ -5,7 +5,7 @@ from acton_ai import HelpfulMyArmM, find_myarm_motor
 from pydantic import BaseModel
 
 from .base_robot_protocol import BaseRobotProtocol
-from .myarm_leader import GRIPPER_MULTIPLER, reconnect_retry
+from .myarm_leader import GRIPPER_MULTIPLER, GRIPPER_OFFSET, reconnect_retry
 
 
 class MyArmFollowerRobot(BaseRobotProtocol):
@@ -44,6 +44,5 @@ class MyArmFollowerRobot(BaseRobotProtocol):
     def write_joints(self, joints: list[float], speed: float) -> None:
         """Nothing to do, no motors on the leader"""
         joints_degrees = [math.degrees(joint) for joint in joints[:6]]
-        joints_degrees.append(joints[6] / GRIPPER_MULTIPLER)
-        logging.debug(f"Writing joints {joints_degrees} at speed {int(speed)}")
+        joints_degrees.append(joints[6] / GRIPPER_MULTIPLER - GRIPPER_OFFSET)
         self._handle.set_joints_from_controller_angles(joints_degrees, int(speed))
