@@ -8,18 +8,28 @@ from myarm_ai.datasets import TrajectorySynthDatasetReader
 from myarm_ai.datasets.lerobot import DEFAULT_MYARM_FEATURES
 
 
-def convert(input_dataset: Path, output_dir: Path, fps: int) -> None:
+
+def convert(input_dataset: Path, output_dir: Path, fps: int, task: str) -> LeRobotDataset:
     traj_dataset = TrajectorySynthDatasetReader(input_dataset)
 
-    LeRobotDataset.create(
+    dataset = LeRobotDataset.create(
         repo_id="pi_at_home",
         root=output_dir,
-        fps=fps
+        fps=fps,
+        features=DEFAULT_MYARM_FEATURES,
     )
 
-    for episode in traj_dataset.episodes:
-        print(episode)
+    shuffled_renders = list(traj_dataset.renders)
+    random.shuffle(shuffled_renders)
+    for render in shuffled_renders:
+        for timestep in render.timesteps:
+            frame_dict = timestep.to_lerobot_frame_dict()
+            dataset.add_frame(frame_dict)
 
+        dataset.save_episode(task=task)
+
+    dataset.consolidate(run_compute_stats=True)
+    return dataset
 
 def main() -> None:
     parser = ArgumentParser(
@@ -32,14 +42,21 @@ def main() -> None:
         type=Path,
         help="Location of directory containing episode_####/ directories",
     )
-    parser.add_argument("--fps", default=30, type=int, help="Target FPS for the dataset.")
-
+    parser.add_argument(
+        "--fps", default=30, type=int, help="Target FPS for the dataset."
+    )
+    parser.add_argument("--task", type=str, help="Task name for the dataset.")
     parser.add_argument(
         "-o", "--output_dir", type=Path, help="Where to write the Lerobot dataset"
     )
     args = parser.parse_args()
 
-    convert(args.episodes_dir, args.output_dir, args.fps)
+    convert(
+        input_dataset=args.episodes_dir,
+        output_dir=args.output_dir,
+        fps=args.fps,
+        task=args.task,
+    )
 
 
 if __name__ == "__main__":
