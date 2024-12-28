@@ -24,12 +24,12 @@ factors.
 
 - [x] Develop a decent teleoperation interface for the MyArm M&C robot leader/follower arms
 - [x] Add isaac-sim support for visualizing above arms
-- [ ] **In Progress**: Learn how to use Replicator to multiplex trajectories of human demonstrations of robot tasks
+- [x] Learn how to use Replicator to multiplex trajectories of human demonstrations of robot tasks
       done in-simulation
-- [ ] Create dataset collection tools based on lerobot dataset format
+- [x] Create dataset collection tools based on lerobot dataset format
   - [x] Play around, train, and test lerobot policies.
         Done: [Now available via this fork of lerobot](https://github.com/huggingface/lerobot/pull/506)
-  - [ ] Create ROS service for starting/stopping data collection and serializing datasets
+  - [ ] **In Progress**: Create isaac -> lerobot conversion scripts
 - [ ] Create easy workflows for:
   - [ ] Record demonstrations with **real leader arm** and **simulation follower arm**
   - [x] Multiplex demonstrations using domain randomization, leveraging Replicator learnings above
