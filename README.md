@@ -84,7 +84,9 @@ Finally, convert the rendered episodes to a dataset:
 ```shell
 docker/run convert_isaac_to_lerobot \
   --episodes_dir /robot/synthetic-output/recordings \
-  --output_dir /robot/synthetic-output/lerobot-fmt
+  --output_dir /robot/synthetic-output/lerobot-fmt \
+  --fps 30 \
+  --task "Pick up a cube and place it in the basket"
 ```
 
 ### Dependencies

@@ -29,7 +29,9 @@ class Timestep(BaseModel):
         images = frame_params.pop("images")
         for obs_name, image_path in images.items():
             lerobot_feature = f"observation.images.{obs_name}"
-            frame_params[lerobot_feature] = cv2.imread(str(image_path))
+            image = cv2.imread(str(image_path))
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            frame_params[lerobot_feature] = image_rgb
 
         # Convert 'state' to 'observation.state'
         frame_params["observation.state"] = frame_params.pop("state")
