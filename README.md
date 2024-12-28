@@ -29,7 +29,13 @@ factors.
 - [x] Create dataset collection tools based on lerobot dataset format
   - [x] Play around, train, and test lerobot policies.
         Done: [Now available via this fork of lerobot](https://github.com/huggingface/lerobot/pull/506)
-  - [ ] **In Progress**: Create isaac -> lerobot conversion scripts
+  - [x] Create isaac -> lerobot conversion scripts
+- [ ] Validate synthetic data improves performance
+  - [ ] **In Progress**: Collect a synthetic data dataset for cube->basket task
+  - [x] Collect a small real dataset for cube->basket task
+  - [ ] Train a model on synthetic data, fine-tune on real data
+  - [x] Train a model on real data]
+  - [ ] Compare performance of model trained on synthetic data vs real data
 - [ ] Create easy workflows for:
   - [ ] Record demonstrations with **real leader arm** and **simulation follower arm**
   - [x] Multiplex demonstrations using domain randomization, leveraging Replicator learnings above
