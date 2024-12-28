@@ -49,6 +49,8 @@ services:
       - ALL
     # Sometimes nodes never fully stop on SIGTERM
     stop_signal: SIGKILL
+    # Improve performance with lerobot dataset conversions
+    shm_size: 5g
     <<:
       - *common-config
 
