@@ -22,6 +22,9 @@ Phase 1 focuses on leveraging imitation learning + synthetic data to improve the
 of imitation-learning datasets with regards to lighting, camera position, and other environmental
 factors.
 
+<details>
+  <summary>Detailed Status</summary>
+
 - [x] Develop a decent teleoperation interface for the MyArm M&C robot leader/follower arms
 - [x] Add isaac-sim support for visualizing above arms
 - [x] Learn how to use Replicator to multiplex trajectories of human demonstrations of robot tasks
@@ -32,6 +35,9 @@ factors.
   - [x] Create isaac -> lerobot conversion scripts
 - [ ] Validate synthetic data improves performance
   - [ ] **In Progress**: Collect a synthetic data dataset for cube->basket task
+    - [ ] **In Progress**: Create STL Assets for cube and basket
+  - [ ] Validate "Replay episode" works as expected with episodes collected in Isaac Sim
+  - [ ] Create a RobotProtocol that emulates latency and speed of my real robot
   - [x] Collect a small real dataset for cube->basket task
   - [ ] Train a model on synthetic data, fine-tune on real data
   - [x] Train a model on real data]
@@ -42,6 +48,8 @@ factors.
   - [ ] Training models with mix of real and simulated data
 - [ ] Benchmark the sim2real gap with this project, publicize results to open source community
 - [ ] Add support for Koch arm and other open-source robot arm
+
+</details>
 
 ### Phase 2
 Add Reinforcement learning pipelines with ROS2 and Isaac-Sim support
