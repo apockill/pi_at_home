@@ -70,7 +70,7 @@ RUN wget https://github.com/BtbN/FFmpeg-Builds/releases/download/${FFMPEG_BUILD}
     # lerobot video decoder
     ffmpeg -encoders | grep libsvtav1 && \
     # Clean up
-    rm -rf /ffmpeg \
+    rm -rf /ffmpeg
 
 # Install colcon-poetry-ros, a tool by Urban Machine for building ROS2 packages with Poetry
 RUN --mount=type=cache,target="${PIP_CACHE}" \
