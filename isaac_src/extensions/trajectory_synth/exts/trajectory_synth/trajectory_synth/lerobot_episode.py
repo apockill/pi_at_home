@@ -13,21 +13,25 @@ class LeRobotEpisodeRecording:
     leader position there is a corresponding follower position.
     """
 
-    def __init__(self, render_dir: Path, recording: schemas.EpisodeJointsRecording):
+    def __init__(
+        self,
+        render_dir: Path,
+        recording: schemas.EpisodeJointsRecording,
+        target_fps: int,
+        episode_index: int = 0,
+        task_index: int = 0,
+    ):
         self.recording = recording
         self.timesteps: list[schemas.LeRobotTimestep] = []
         self.save_path = render_dir / "episode.json"
+        self.target_fps = target_fps
+        self.episode_index = episode_index
+        self.task_index = task_index
 
         self.leader_steps = recording.robots["leader"].time_samples
         self.follower_steps = recording.robots["follower"].time_samples
 
-    def add_timestep(
-        self,
-        isaac_time: float,
-        frame_index: int | None = None,
-        episode_index: int = 0,
-        task_index: int = 0,
-    ):
+    def add_timestep(self, isaac_time: float):
         """Finds or interpolates the joint positions for each robot in at the given
         isaac_time and appends it to the current timesteps.
         """
@@ -39,16 +43,20 @@ class LeRobotEpisodeRecording:
         leader_joints = self._interpolate_joints(isaac_time, self.leader_steps)
         follower_joints = self._interpolate_joints(isaac_time, self.follower_steps)
 
+        # Modify isaac_time so it stretches or squishes such that 'target_fps' is hit
+        # TODO: I need to look into this further to validate it's working as intended
+        timestamp = frame_index / self.target_fps
+
         # Create a LeRobotTimestep
         # (Here we store leader joints in .action, follower in .state)
         new_timestep = schemas.LeRobotTimestep(
             action=leader_joints,
             state=follower_joints,
-            timestamp=isaac_time,
+            timestamp=timestamp,
             frame_index=frame_index,
-            episode_index=episode_index,
+            episode_index=self.episode_index,
             index=frame_index,  # Sometimes index == frame_index
-            task_index=task_index,
+            task_index=self.task_index,
         )
 
         self.timesteps.append(new_timestep)
