@@ -8,8 +8,9 @@ from myarm_ai.datasets import TrajectorySynthDatasetReader
 from myarm_ai.datasets.lerobot import DEFAULT_MYARM_FEATURES
 
 
-
-def convert(input_dataset: Path, output_dir: Path, fps: int, task: str) -> LeRobotDataset:
+def convert(
+    input_dataset: Path, output_dir: Path, fps: int, task: str
+) -> LeRobotDataset:
     traj_dataset = TrajectorySynthDatasetReader(input_dataset)
 
     dataset = LeRobotDataset.create(
@@ -30,6 +31,7 @@ def convert(input_dataset: Path, output_dir: Path, fps: int, task: str) -> LeRob
 
     dataset.consolidate(run_compute_stats=True)
     return dataset
+
 
 def main() -> None:
     parser = ArgumentParser(
