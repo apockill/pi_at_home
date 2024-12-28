@@ -37,12 +37,12 @@ factors.
   - [ ] **In Progress**: Collect a synthetic data dataset for cube->basket task
     - [ ] **In Progress**: Create STL Assets for cube and basket
   - [ ] Validate "Replay episode" works as expected with episodes collected in Isaac Sim
-  - [ ] Create a RobotProtocol that emulates latency and speed of my real robot
+  - [x] Create a RobotProtocol that emulates latency and speed of my real robot
   - [x] Collect a small real dataset for cube->basket task
   - [ ] Train a model on synthetic data, fine-tune on real data
   - [x] Train a model on real data]
   - [ ] Compare performance of model trained on synthetic data vs real data
-- [ ] Create easy workflows for:
+- [ ] Create & Document easy workflows for:
   - [ ] Record demonstrations with **real leader arm** and **simulation follower arm**
   - [x] Multiplex demonstrations using domain randomization, leveraging Replicator learnings above
   - [ ] Training models with mix of real and simulated data
