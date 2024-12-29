@@ -61,8 +61,8 @@ class RandomizationDistributions(BaseModel):
             pos_offset_min=(-1.0, -1.0, -0.0),
             rot_offset_max=(0, 0, 360),
             rot_offset_min=(0, 0, -360),
-            scale_max=(10.0, 10.0, 1.0),
-            scale_min=(0.1, 0.1, 1.0),
+            scale_max=(3.0, 3.0, 1.0),
+            scale_min=(0.05, 0.05, 1.0),
         ),
         # Stretch and squish the ENTIRE world a little bit, so the algorithm has to
         # learn to deal with different features on the robots, and can't rely on the
