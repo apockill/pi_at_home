@@ -49,7 +49,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
             with ui.HStack(spacing=10):
                 ui.Label("Episode Number:", width=150)
                 self.episode_number_field = ui.IntField()
-                self.episode_number_field.model.set_value(1)
+                self.episode_number_field.model.set_value(-1)
 
             # Camera Selection
             with ui.HStack(spacing=10):
@@ -76,6 +76,12 @@ class TrajectoryRendererExtension(omni.ext.IExt):
                 ui.Label("Number of Renders:", width=150)
                 self.num_renders_field = ui.IntField()
                 self.num_renders_field.model.set_value(1)
+
+            # Target FPS
+            with ui.HStack(spacing=10):
+                ui.Label("Target FPS", width=150)
+                self.target_fps_field = ui.IntField()
+                self.target_fps_field.model.set_value(30)
 
             # Render Settings
             with ui.CollapsableFrame("Randomization Settings", height=200):
@@ -112,28 +118,44 @@ class TrajectoryRendererExtension(omni.ext.IExt):
             self.render_button.enabled = True
             return
 
-        for i in range(num_renders):
-            self.update_status(f"Starting render {i + 1} of {num_renders}...")
-            try:
-                await self.replay_episode(
-                    render_index=i, randomization_config=randomization_config
-                )
-            except Exception as e:
-                self.update_status(f"Failed to render: {e}")
-                raise
-            finally:
-                self.render_button.enabled = True
+        # If the chosen episode == -1, select all episodes
+        episode_chosen = self.episode_number_field.model.get_value_as_int()
+        if episode_chosen < 0:
+            episodes = [
+                int(str(p.name).split("_")[-1])
+                for p in Path(
+                    self.recordings_dir_field.model.get_value_as_string()
+                ).iterdir()
+            ]
+        else:
+            episodes = [episode_chosen]
+
+        # For each episode, render the episode num_renders times
+        for episode_number in episodes:
+            for i in range(num_renders):
+                self.update_status(f"Starting render {i + 1} of {num_renders}...")
+                try:
+                    await self.replay_episode(
+                        episode_number=episode_number,
+                        render_index=i,
+                        randomization_config=randomization_config,
+                    )
+                except Exception as e:
+                    self.update_status(f"Failed to render: {e}")
+                    raise
+                finally:
+                    self.render_button.enabled = True
 
         self.update_status("All renders completed.")
 
     async def replay_episode(
         self,
+        episode_number: int,
         render_index: int,
         randomization_config: schemas.RandomizationDistributions,
     ) -> None:
         # Get user inputs
         recordings_dir = Path(self.recordings_dir_field.model.get_value_as_string())
-        episode_number = self.episode_number_field.model.get_value_as_int()
         resolution_width = self.resolution_width_field.model.get_value_as_int()
         resolution_height = self.resolution_height_field.model.get_value_as_int()
 
@@ -144,7 +166,9 @@ class TrajectoryRendererExtension(omni.ext.IExt):
             traj_recording.renders_dir, "render"
         )
         joints_recording = LeRobotEpisodeRecording(
-            render_path, traj_recording.joints_recording
+            render_dir=render_path,
+            recording=traj_recording.joints_recording,
+            target_fps=self.target_fps_field.model.get_value_as_int(),
         )
         selected_camera_names = [
             name.strip()
@@ -278,29 +302,44 @@ class TrajectoryRendererExtension(omni.ext.IExt):
             render_product = rep.create.render_product(camera_path, render_resolution)
             render_products.append((camera.GetName(), render_product))
 
-        # Randomize textures of all prims
+        # Randomize textures of all prims. Since project_uvw has a drastic effect on
+        # the appearance of the textures, we set randomize the project_uvw flag as well.
         mesh_textures = [
             str(t) for t in path_utils.get_all_textures_in_dir(mesh_textures_path)
         ]
         prims_to_apply_materials = rep.get.mesh()
-        random_material = rep.create.material_omnipbr(
-            # Create random material properties
-            diffuse=rep.distribution.uniform((0, 0, 0), (1, 1, 1)),
-            roughness=rep.distribution.uniform(0, 1),
-            metallic=rep.distribution.choice([0, 1]),
-            emissive_color=rep.distribution.uniform((0, 0, 0.5), (0, 0, 1)),
-            emissive_intensity=rep.distribution.uniform(0, 1000),
-            # Texturize the material properties
-            diffuse_texture=rep.distribution.choice(mesh_textures),
-            roughness_texture=rep.distribution.choice(mesh_textures),
-            metallic_texture=rep.distribution.choice(mesh_textures),
-            emissive_texture=rep.distribution.choice(mesh_textures),
-            count=random.randint(config.min_materials, config.max_materials),
-            project_uvw=True,
-        )
+        materials = [
+            rep.create.material_omnipbr(
+                # Create random material properties
+                diffuse=rep.distribution.uniform((0, 0, 0), (1, 1, 1)),
+                roughness=rep.distribution.uniform(0, 1),
+                metallic=rep.distribution.choice([0, 1]),
+                emissive_color=rep.distribution.uniform((0, 0, 0.5), (0, 0, 1)),
+                emissive_intensity=rep.distribution.uniform(0, 1000),
+                # Texturize the material properties
+                diffuse_texture=rep.distribution.choice(mesh_textures),
+                roughness_texture=rep.distribution.choice(mesh_textures),
+                metallic_texture=rep.distribution.choice(mesh_textures),
+                emissive_texture=rep.distribution.choice(mesh_textures),
+                count=random.randint(config.min_materials, config.max_materials),
+                project_uvw=project_uvw,
+            )
+            for project_uvw in [True, False]
+        ]
         rep.randomizer.materials(
-            materials=random_material, input_prims=prims_to_apply_materials
+            materials=materials, input_prims=prims_to_apply_materials
         )
+
+        # Randomize positions of preconfigured distractor prims
+        for prim_path, distractor_config in config.distractor_params.items():
+            distractor_prims = rep.get.prim_at_path(prim_path)
+            print(f"{prim_path=} {distractor_prims=}")
+            with distractor_prims:
+                rep.modify.pose(
+                    position=distractor_config.position_distribution,
+                    rotation=distractor_config.rotation_distribution,
+                    scale=distractor_config.scale_distribution,
+                )
 
         # Create a skybox with a texture
         skylight_textures = [
@@ -308,7 +347,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
         ]
         rep.create.light(
             rotation=rep.distribution.uniform((0, -180, -180), (0, 180, 180)),
-            intensity=rep.distribution.normal(400, 100),
+            intensity=rep.distribution.normal(400, 200),
             temperature=rep.distribution.normal(6500, 1000),
             light_type="dome",
             texture=rep.distribution.choice(skylight_textures),

@@ -7,7 +7,7 @@ leader:
       root_config:
         # Override this to use a real robot
         robot_protocol: DummyBouncingRobot
-        move_speed: 0.0
+        move_speed: 0.0  # Doesn't affect the 'leader', since it doesn't get write cmds
 
 follower:
   RobotFollowerNode:
@@ -15,5 +15,5 @@ follower:
       root_config:
         # Override this to use a real robot
         robot_protocol: DummyCopycatRobot
-        move_speed: 20.0
+        move_speed: 0.35
 

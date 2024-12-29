@@ -57,6 +57,21 @@ RUN --mount=type=cache,target="${APT_CACHE}" \
     python3-venv
 ######################################################################
 
+
+# Install FFMPEG for LeRobot video encoding uses
+WORKDIR /ffmpeg
+# To update, select a build from https://github.com/BtbN/FFmpeg-Builds/releases
+ARG FFMPEG_BUILD=autobuild-2024-10-31-12-59/ffmpeg-N-117676-g87068b9600-linux64-gpl.tar.xz
+RUN install-packages wget
+RUN wget https://github.com/BtbN/FFmpeg-Builds/releases/download/${FFMPEG_BUILD} && \
+    tar -xvf ffmpeg*.tar.xz && \
+    mv ffmpeg*/bin/* /usr/local/bin/ && \
+    # Verify this ffmpeg build succeeded and has support for libsvtav1, the default
+    # lerobot video decoder
+    ffmpeg -encoders | grep libsvtav1 && \
+    # Clean up
+    rm -rf /ffmpeg
+
 # Install colcon-poetry-ros, a tool by Urban Machine for building ROS2 packages with Poetry
 RUN --mount=type=cache,target="${PIP_CACHE}" \
     pip3 install --break-system-packages "colcon-poetry-ros==${COLCON_POETRY_ROS_VERSION}"
