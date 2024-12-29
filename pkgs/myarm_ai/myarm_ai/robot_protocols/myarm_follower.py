@@ -1,4 +1,3 @@
-import logging
 import math
 
 from acton_ai import HelpfulMyArmM, find_myarm_motor

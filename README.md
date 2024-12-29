@@ -35,7 +35,16 @@ factors.
   - [x] Create isaac -> lerobot conversion scripts
 - [ ] Validate synthetic data improves performance
   - [ ] **In Progress**: Collect a synthetic data dataset for cube->basket task
-    - [ ] **In Progress**: Create STL Assets for cube and basket
+    - [x] **In Progress**: Create STL Assets for cube and basket
+    - [x] Add randomization for position and scale of ground plane (and other objects too)
+    - [ ] Validate observation.state vs action latency (and direction of latency) matches real world captured datasets
+    - [ ] Validate frames are synced as expected, for example, when the robot starts moving in the opposite direction
+    - [ ] record myself moving the robot IRL, and compare to the simulation when rendered @ 30fps
+    - [ ] Calibrate robots so they match position in sim
+    - [ ] Record position of articulator in sim, not just real robot joints
+    - [ ] Move main-scene to isaac_src/scenes/cube-cup-task.scene and set it up with 25 preset positions
+    - [ ] Fix bug with myarm firmware where there's a singularity at the 0 point
+    - 
   - [ ] Validate "Replay episode" works as expected with episodes collected in Isaac Sim
   - [x] Create a RobotProtocol that emulates latency and speed of my real robot
   - [x] Collect a small real dataset for cube->basket task

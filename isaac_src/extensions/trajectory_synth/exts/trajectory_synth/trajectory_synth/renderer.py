@@ -302,29 +302,44 @@ class TrajectoryRendererExtension(omni.ext.IExt):
             render_product = rep.create.render_product(camera_path, render_resolution)
             render_products.append((camera.GetName(), render_product))
 
-        # Randomize textures of all prims
+        # Randomize textures of all prims. Since project_uvw has a drastic effect on
+        # the appearance of the textures, we set randomize the project_uvw flag as well.
         mesh_textures = [
             str(t) for t in path_utils.get_all_textures_in_dir(mesh_textures_path)
         ]
         prims_to_apply_materials = rep.get.mesh()
-        random_material = rep.create.material_omnipbr(
-            # Create random material properties
-            diffuse=rep.distribution.uniform((0, 0, 0), (1, 1, 1)),
-            roughness=rep.distribution.uniform(0, 1),
-            metallic=rep.distribution.choice([0, 1]),
-            emissive_color=rep.distribution.uniform((0, 0, 0.5), (0, 0, 1)),
-            emissive_intensity=rep.distribution.uniform(0, 1000),
-            # Texturize the material properties
-            diffuse_texture=rep.distribution.choice(mesh_textures),
-            roughness_texture=rep.distribution.choice(mesh_textures),
-            metallic_texture=rep.distribution.choice(mesh_textures),
-            emissive_texture=rep.distribution.choice(mesh_textures),
-            count=random.randint(config.min_materials, config.max_materials),
-            project_uvw=True,
-        )
+        materials = [
+            rep.create.material_omnipbr(
+                # Create random material properties
+                diffuse=rep.distribution.uniform((0, 0, 0), (1, 1, 1)),
+                roughness=rep.distribution.uniform(0, 1),
+                metallic=rep.distribution.choice([0, 1]),
+                emissive_color=rep.distribution.uniform((0, 0, 0.5), (0, 0, 1)),
+                emissive_intensity=rep.distribution.uniform(0, 1000),
+                # Texturize the material properties
+                diffuse_texture=rep.distribution.choice(mesh_textures),
+                roughness_texture=rep.distribution.choice(mesh_textures),
+                metallic_texture=rep.distribution.choice(mesh_textures),
+                emissive_texture=rep.distribution.choice(mesh_textures),
+                count=random.randint(config.min_materials, config.max_materials),
+                project_uvw=project_uvw,
+            )
+            for project_uvw in [True, False]
+        ]
         rep.randomizer.materials(
-            materials=random_material, input_prims=prims_to_apply_materials
+            materials=materials, input_prims=prims_to_apply_materials
         )
+
+        # Randomize positions of preconfigured distractor prims
+        for prim_path, distractor_config in config.distractor_params.items():
+            distractor_prims = rep.get.prim_at_path(prim_path)
+            print(f"{prim_path=} {distractor_prims=}")
+            with distractor_prims:
+                rep.modify.pose(
+                    position=distractor_config.position_distribution,
+                    rotation=distractor_config.rotation_distribution,
+                    scale=distractor_config.scale_distribution,
+                )
 
         # Create a skybox with a texture
         skylight_textures = [

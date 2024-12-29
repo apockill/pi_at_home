@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from .constants import BOUND
 
 
-class CameraDistribution(BaseModel):
+class PositionDistribution(BaseModel):
     pos_offset_max: tuple[float, float, float]
     pos_offset_min: tuple[float, float, float] | None = None
 
@@ -27,6 +27,19 @@ class CameraDistribution(BaseModel):
         return rep.distribution.uniform(min_bound, max_bound)
 
 
+class DistractorDistribution(PositionDistribution):
+    scale_max: tuple[float, float, float]
+    scale_min: tuple[float, float, float] | None = None
+
+    @property
+    def scale_distribution(self):
+        return self._uniform(self.scale_max, self.scale_min)
+
+
+class CameraDistribution(PositionDistribution):
+    pass
+
+
 class RandomizationDistributions(BaseModel):
     # Choose how fast or slow the robot moves. This allows you to "stretch" or
     # "squish" the trajectory in time.
@@ -41,6 +54,28 @@ class RandomizationDistributions(BaseModel):
     light_pos_offset: tuple[float, float, float] = (0.1, 0.1, 0.1)
     light_rot_offset: tuple[float, float, float] = (45, 45, 45)
 
+    # Choose how to modify different prims in the scene
+    distractor_params: dict[str, DistractorDistribution] = {
+        "/World/GroundPlane": DistractorDistribution(
+            pos_offset_max=(1.0, 1.0, 0.0),
+            pos_offset_min=(-1.0, -1.0, -0.0),
+            rot_offset_max=(0, 0, 360),
+            rot_offset_min=(0, 0, -360),
+            scale_max=(10.0, 10.0, 1.0),
+            scale_min=(0.1, 0.1, 1.0),
+        ),
+        # Stretch and squish the ENTIRE world a little bit, so the algorithm has to
+        # learn to deal with different features on the robots, and can't rely on the
+        # exact straight lines and angles the robot makes.
+        "/World": DistractorDistribution(
+            pos_offset_max=(0, 0, 0),
+            pos_offset_min=(0, 0, 0),
+            rot_offset_max=(0, 0, 0),
+            rot_offset_min=(0, 0, 0),
+            scale_max=(1.2, 1.2, 1.2),
+            scale_min=(0.8, 0.8, 0.8),
+        ),
+    }
     # Camera name -> randomization params
     # One is randomly chosen per full trajectory run
     camera_params: dict[str, list[CameraDistribution]] = {
