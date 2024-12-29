@@ -44,11 +44,11 @@ factors.
          - Measured (with myarm lerobot branch): ~9 frames latency from action -> observation
     - [x] Validate frames are synced as expected, for example, when the robot starts moving in the opposite direction
          - Frames appear synced, however when compared to real-world footage there is a speed scaling issue...
+    - [x] Validate "Replay episode" works as expected with episodes collected in Isaac Sim
     - [ ] Better calibrate robots so they match position in sim to real world
     - [ ] Record position of articulator in sim, not just real robot joints
     - [x] Fix bug with myarm firmware where there's a singularity at the 0 point
     - [ ] Investigate high latency in myarm loop (it is higher than in lerobot branch)
-  - [ ] Validate "Replay episode" works as expected with episodes collected in Isaac Sim
   - [x] Create a RobotProtocol that emulates latency and speed of my real robot
   - [x] Collect a small real dataset for cube->basket task
   - [ ] Train a model on synthetic data, fine-tune on real data
