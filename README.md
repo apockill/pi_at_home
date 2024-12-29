@@ -42,7 +42,7 @@ factors.
     - [ ] record myself moving the robot IRL, and compare to the simulation when rendered @ 30fps
     - [ ] Calibrate robots so they match position in sim
     - [ ] Record position of articulator in sim, not just real robot joints
-    - [ ] Move main-scene to isaac_src/scenes/cube-cup-task.scene and set it up with 25 preset positions
+    - [x] Move main-scene to isaac_src/scenes/cube-cup-task.scene and set it up with 25 preset positions
     - [ ] Fix bug with myarm firmware where there's a singularity at the 0 point
     - 
   - [ ] Validate "Replay episode" works as expected with episodes collected in Isaac Sim
