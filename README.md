@@ -90,7 +90,7 @@ There are three steps to synthetic data generation. First, open up the `syntheti
 docker/launch synthetic_generation
 ```
 
-This will spin up Isaac Sim. Go to Extensions->3rd Party and turn on the "Trajectory Synth" extension.
+This will spin up Isaac Sim. Set up extensions using [this guide](docs/adding-custom-extensions.md).
 This extension is custom built, and stored in `isaac_src/extensions`. Next, plug in your robot. When using a real world robot, you will need to add a `parameters.overrides.yaml` file to the 
 root of `launch-profiles/synthetic_generation` to configure your specific robots drivers.
 
