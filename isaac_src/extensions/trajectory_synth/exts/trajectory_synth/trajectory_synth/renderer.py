@@ -347,7 +347,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
         ]
         rep.create.light(
             rotation=rep.distribution.uniform((0, -180, -180), (0, 180, 180)),
-            intensity=rep.distribution.normal(400, 200),
+            intensity=rep.distribution.uniform(50, 1200),
             temperature=rep.distribution.normal(6500, 1000),
             light_type="dome",
             texture=rep.distribution.choice(skylight_textures),
