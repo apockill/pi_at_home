@@ -80,10 +80,11 @@ class RenderReader:
                 obs_dir.name: self._image_for_observation(step["frame_index"], obs_dir)
                 for obs_dir in self._observation_paths
             }
+            # TODO: Whether joints are pulled from 'ros' or 'sim' should be configurable
             yield Timestep(
                 images=images,
-                action=step["action"],
-                state=step["state"],  # type: ignore
+                action=step["ros_action"],
+                state=step["ros_state"],  # type: ignore
                 timestamp=step["timestamp"],
             )
 

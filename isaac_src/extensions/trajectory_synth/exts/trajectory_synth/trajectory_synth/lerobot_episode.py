@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 from . import schemas
 
@@ -40,8 +41,18 @@ class LeRobotEpisodeRecording:
         )
 
         # Interpolate joints
-        leader_joints = self._interpolate_joints(isaac_time, self.leader_steps)
-        follower_joints = self._interpolate_joints(isaac_time, self.follower_steps)
+        leader_ros_joints = self._interpolate_joints(
+            isaac_time, self.leader_steps, "real"
+        )
+        leader_sim_joints = self._interpolate_joints(
+            isaac_time, self.leader_steps, "sim"
+        )
+        follower_ros_joints = self._interpolate_joints(
+            isaac_time, self.follower_steps, "real"
+        )
+        follower_sim_joints = self._interpolate_joints(
+            isaac_time, self.follower_steps, "sim"
+        )
 
         # Modify isaac_time so it stretches or squishes such that 'target_fps' is hit
         # TODO: I need to look into this further to validate it's working as intended
@@ -50,8 +61,10 @@ class LeRobotEpisodeRecording:
         # Create a LeRobotTimestep
         # (Here we store leader joints in .action, follower in .state)
         new_timestep = schemas.LeRobotTimestep(
-            action=leader_joints,
-            state=follower_joints,
+            ros_action=leader_ros_joints,
+            ros_state=follower_ros_joints,
+            sim_action=leader_sim_joints,
+            sim_state=follower_sim_joints,
             timestamp=timestamp,
             frame_index=frame_index,
             episode_index=self.episode_index,
@@ -62,7 +75,10 @@ class LeRobotEpisodeRecording:
         self.timesteps.append(new_timestep)
 
     def _interpolate_joints(
-        self, time: float, time_samples: list[schemas.RobotTimeSample]
+        self,
+        time: float,
+        time_samples: list[schemas.RobotTimeSample],
+        joints_source: Literal["real", "sim"],
     ) -> list[float]:
         """
         Given a time and a particular robot_key (e.g. 'leader' or 'follower'),
@@ -86,7 +102,7 @@ class LeRobotEpisodeRecording:
 
         # Validate time is in-range
         if time <= time_samples[0].isaac_time:
-            return time_samples[0].joint_positions
+            return time_samples[0].from_source(joints_source)
         if time >= time_samples[-1].isaac_time:
             raise ValueError(f"Time {time} is after the last sample")
 
@@ -98,8 +114,8 @@ class LeRobotEpisodeRecording:
                 # Interpolate linearly
                 ratio = (time - t0) / (t1 - t0)
 
-                joints0 = time_samples[i].joint_positions
-                joints1 = time_samples[i + 1].joint_positions
+                joints0 = time_samples[i].from_source(joints_source)
+                joints1 = time_samples[i + 1].from_source(joints_source)
                 interp_joints = [
                     j0 + ratio * (j1 - j0)
                     for j0, j1 in zip(joints0, joints1, strict=True)
@@ -107,7 +123,7 @@ class LeRobotEpisodeRecording:
                 return interp_joints
 
         # Fallback (should not happen if times cover the entire range)
-        return time_samples[-1].joint_positions
+        return time_samples[-1].from_source(joints_source)
 
     def save(self):
         """Save the list as json lines"""
