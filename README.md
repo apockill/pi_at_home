@@ -45,17 +45,17 @@ factors.
     - [x] Validate frames are synced as expected, for example, when the robot starts moving in the opposite direction
          - Frames appear synced, however when compared to real-world footage there is a speed scaling issue...
     - [x] Validate "Replay episode" works as expected with episodes collected in Isaac Sim
+    - [x] Investigate high latency in myarm loop (it is higher than in lerobot branch)
     - [ ] Better calibrate robots so they match position in sim to real world
     - [x] Record position of articulator in sim, not just real robot joints
     - [x] Fix bug with myarm firmware where there's a singularity at the 0 point
-    - [ ] Investigate high latency in myarm loop (it is higher than in lerobot branch)
   - [x] Create a RobotProtocol that emulates latency and speed of my real robot
   - [x] Collect a small real dataset for cube->basket task
   - [ ] Train a model on synthetic data, fine-tune on real data
   - [x] Train a model on real data]
   - [ ] Compare performance of model trained on synthetic data vs real data
 - [ ] Create & Document easy workflows for:
-  - [ ] Record demonstrations with **real leader arm** and **simulation follower arm**
+  - [ ] Record demonstrations with **real le[dirview.py](../../../../../dirview.py)ader arm** and **simulation follower arm**
   - [x] Multiplex demonstrations using domain randomization, leveraging Replicator learnings above
   - [ ] Training models with mix of real and simulated data
 - [ ] Benchmark the sim2real gap with this project, publicize results to open source community
