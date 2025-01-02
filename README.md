@@ -46,11 +46,12 @@ factors.
          - Frames appear synced, however when compared to real-world footage there is a speed scaling issue...
     - [x] Validate "Replay episode" works as expected with episodes collected in Isaac Sim
     - [x] Investigate high latency in myarm loop (it is higher than in lerobot branch)
-    - [ ] Better calibrate robots so they match position in sim to real world
+    - [x] Better calibrate robots so they match position in sim to real world
     - [x] Record position of articulator in sim, not just real robot joints
     - [x] Fix bug with myarm firmware where there's a singularity at the 0 point
+    - [ ] Actually collect 50 samples
   - [x] Create a RobotProtocol that emulates latency and speed of my real robot
-  - [x] Collect a small real dataset for cube->basket task
+  - [ ] Collect a small real dataset for cube->basket task
   - [ ] Train a model on synthetic data, fine-tune on real data
   - [x] Train a model on real data]
   - [ ] Compare performance of model trained on synthetic data vs real data
