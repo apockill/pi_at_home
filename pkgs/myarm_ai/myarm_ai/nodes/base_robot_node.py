@@ -3,11 +3,18 @@ from typing import Any
 
 from node_helpers.nodes import HelpfulNode
 from pydantic import BaseModel
-from rclpy.qos import qos_profile_services_default
+from rclpy.qos import (
+    QoSDurabilityPolicy,
+    QoSHistoryPolicy,
+    QoSProfile,
+    QoSReliabilityPolicy,
+)
 from sensor_msgs.msg import JointState
 
 from myarm_ai.robot_protocols import BaseRobotProtocol
 from myarm_ai.urdfs import MyArmCURDF, MyArmMURDF
+
+last_pos = [0, 0, 0, 0, 0, 0, 0]
 
 
 class BaseRobotNode(HelpfulNode, ABC):
@@ -30,16 +37,18 @@ class BaseRobotNode(HelpfulNode, ABC):
         self.robot_protocol.connect()
 
         # Create publishers
+        reliable_latest_receiver = QoSProfile(
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=1,
+            reliability=QoSReliabilityPolicy.RELIABLE,  # or BEST_EFFORT
+            durability=QoSDurabilityPolicy.VOLATILE,
+        )
         self.joint_state_publisher = self.create_publisher(
-            JointState, "current_joint_states", qos_profile_services_default
+            JointState, "current_joint_states", reliable_latest_receiver
         )
         # Set motor states and speed
         self.motor_state_subscriber = self.create_subscription(
-            JointState,
-            "motor_commands",
-            self.on_motor_states,
-            # Likely could be improved for smoothness
-            qos_profile=qos_profile_services_default,
+            JointState, "motor_commands", self.on_motor_states, reliable_latest_receiver
         )
 
         # Create timers
