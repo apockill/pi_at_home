@@ -49,7 +49,9 @@ factors.
     - [x] Better calibrate robots so they match position in sim to real world
     - [x] Record position of articulator in sim, not just real robot joints
     - [x] Fix bug with myarm firmware where there's a singularity at the 0 point
-    - [ ] Actually collect 50 samples
+    - [x] Actually collect 50 samples
+    - [ ] Sanity check a few episodes in the Lerobot visualizer before uploading
+    - [ ] Upload and start training
   - [x] Create a RobotProtocol that emulates latency and speed of my real robot
   - [ ] Collect a small real dataset for cube->basket task
   - [ ] Train a model on synthetic data, fine-tune on real data
