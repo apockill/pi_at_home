@@ -51,8 +51,8 @@ class RandomizationDistributions(BaseModel):
     max_materials: int = 50
 
     # Choose how much to modify lighting position
-    light_pos_offset: tuple[float, float, float] = (0.1, 0.1, 0.1)
-    light_rot_offset: tuple[float, float, float] = (45, 45, 45)
+    light_pos_offset: tuple[float, float, float] = (0.5, 0.5, 0.5)
+    light_rot_offset: tuple[float, float, float] = (90, 90, 90)
 
     # Choose how to modify different prims in the scene
     distractor_params: dict[str, DistractorDistribution] = {

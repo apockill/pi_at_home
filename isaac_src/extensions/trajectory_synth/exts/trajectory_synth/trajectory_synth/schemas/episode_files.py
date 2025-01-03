@@ -1,12 +1,20 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
 class RobotTimeSample(BaseModel):
     """A recording for a single robot, for a single episode"""
 
-    joint_positions: list[float]
+    real_joint_positions: list[float]
+    sim_joint_positions: list[float]
     isaac_time: float
     ros_time: float
+
+    def from_source(self, source: Literal["real", "sim"]) -> list[float]:
+        return (
+            self.real_joint_positions if source == "real" else self.sim_joint_positions
+        )
 
 
 class RobotRecording(BaseModel):
@@ -34,8 +42,10 @@ class TrajectoryRecordingMeta(BaseModel):
 class LeRobotTimestep(BaseModel):
     """Closely mimics one row of a episode *.parquet file from a lerobot dataset"""
 
-    action: list[float]
-    state: list[float]
+    ros_action: list[float]
+    sim_action: list[float]
+    ros_state: list[float]
+    sim_state: list[float]
     timestamp: float
     frame_index: int
     episode_index: int

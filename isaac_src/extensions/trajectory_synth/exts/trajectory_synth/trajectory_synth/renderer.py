@@ -73,7 +73,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
 
             # Number of Renders Input
             with ui.HStack(spacing=10):
-                ui.Label("Number of Renders:", width=150)
+                ui.Label("Target Number of Renders:", width=150)
                 self.num_renders_field = ui.IntField()
                 self.num_renders_field.model.set_value(1)
 
@@ -131,12 +131,32 @@ class TrajectoryRendererExtension(omni.ext.IExt):
             episodes = [episode_chosen]
 
         # For each episode, render the episode num_renders times
-        for episode_number in episodes:
-            for i in range(num_renders):
+        for i in range(num_renders):
+            for episode_number in episodes:
                 self.update_status(f"Starting render {i + 1} of {num_renders}...")
+                recordings_dir = Path(
+                    self.recordings_dir_field.model.get_value_as_string()
+                )
+                episode_path = recordings_dir / f"episode_{episode_number:03d}"
+                traj_recording = EpisodeRecording(episode_path)
+
+                next_render_number = path_utils.get_next_number_in_dir(
+                    traj_recording.renders_dir, "render"
+                )
+                if next_render_number >= i:
+                    self.update_status(
+                        f"Skipping episode {episode_number} in favor of other episodes."
+                    )
+                    continue
+
+                render_path = path_utils.get_next_numbered_dir(
+                    traj_recording.renders_dir, "render"
+                )
+
                 try:
                     await self.replay_episode(
-                        episode_number=episode_number,
+                        traj_recording=traj_recording,
+                        render_path=render_path,
                         render_index=i,
                         randomization_config=randomization_config,
                     )
@@ -150,21 +170,17 @@ class TrajectoryRendererExtension(omni.ext.IExt):
 
     async def replay_episode(
         self,
-        episode_number: int,
+        traj_recording: EpisodeRecording,
+        render_path: Path,
         render_index: int,
         randomization_config: schemas.RandomizationDistributions,
     ) -> None:
         # Get user inputs
-        recordings_dir = Path(self.recordings_dir_field.model.get_value_as_string())
         resolution_width = self.resolution_width_field.model.get_value_as_int()
         resolution_height = self.resolution_height_field.model.get_value_as_int()
 
         # Create paths and recording objects
-        episode_path = recordings_dir / f"episode_{episode_number:03d}"
-        traj_recording = EpisodeRecording(episode_path)
-        render_path = path_utils.get_next_numbered_dir(
-            traj_recording.renders_dir, "render"
-        )
+
         joints_recording = LeRobotEpisodeRecording(
             render_dir=render_path,
             recording=traj_recording.joints_recording,
@@ -231,7 +247,8 @@ class TrajectoryRendererExtension(omni.ext.IExt):
 
             joints_recording.add_timestep(current_time)
             self.update_status(
-                f"Rendering frame {frame_index}/{final_frame} of render {render_index}"
+                f"Rendering frame {frame_index}/{final_frame}. Render: {render_index} "
+                f"Episode: {traj_recording.directory.name}"
             )
 
         timeline.stop()
@@ -239,7 +256,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
 
         joints_recording.save()
 
-        self.update_status(f"Render {render_index + 1} completed.")
+        self.update_status(f"Render {render_index} completed.")
 
     def get_cameras_from_names(self, selected_camera_names: list[str]):
         available_cameras = self.get_stage_prims("Camera")
@@ -347,7 +364,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
         ]
         rep.create.light(
             rotation=rep.distribution.uniform((0, -180, -180), (0, 180, 180)),
-            intensity=rep.distribution.normal(400, 200),
+            intensity=rep.distribution.uniform(50, 1200),
             temperature=rep.distribution.normal(6500, 1000),
             light_type="dome",
             texture=rep.distribution.choice(skylight_textures),

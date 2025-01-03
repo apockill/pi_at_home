@@ -7,6 +7,7 @@ import omni.graph.core as og
 import omni.graph.core.types as ot
 import omni.kit.commands
 from omni import ui
+from omni.isaac.core.articulations import Articulation
 
 from . import path_utils, schemas
 from .episode import EpisodeRecording
@@ -226,6 +227,10 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
         # so we can reinitialize the extension without conflicts
         recorder_name = f"JointRecorder_{random.randint(0, 10000000)}"
 
+        # The custom node needs a reference to the sim robot, so we can record not just
+        # the real robots joints, but also the simulated robot's joints
+        sim_articulator = Articulation(prim_path=robot_attributes.root_joint)
+
         @og.create_node_type(unique_name=recorder_name)
         def custom_joint_state_processor(
             input_joint_names: ot.tokenarray,
@@ -244,11 +249,16 @@ class TrajectoryRecorderExtension(omni.ext.IExt):
                 logging.debug("No joint positions received from ROS yet.")
                 return ""
 
+            if not sim_articulator.handles_initialized:
+                sim_articulator.initialize()
+                logging.info(f"Initialized sim articulator for {robot_attributes.name}")
+
             robot_recording = self.current_joint_recording.robots[robot_attributes.name]
             robot_recording.joint_names = input_joint_names
             robot_recording.time_samples.append(
                 schemas.RobotTimeSample(
-                    joint_positions=input_positions,
+                    real_joint_positions=input_positions,
+                    sim_joint_positions=sim_articulator.get_joint_positions().tolist(),
                     isaac_time=timestamp,
                     ros_time=ros_timestamp,
                 )
