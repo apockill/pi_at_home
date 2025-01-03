@@ -1,4 +1,3 @@
-import logging
 from threading import Event, RLock, Thread
 
 from pydantic import BaseModel
@@ -44,10 +43,8 @@ class ThreadedReaderWriterRobot(BaseRobotProtocol):
                 self._last_joints_read = self._robot.read_joints()
                 if self._last_write_request is not None:
                     joints, speed = self._last_write_request
-                    logging.info(f"Write joints: {joints} at speed {speed}")
 
                     if joints != self._last_joints_read:
-                        logging.info(f"Writing joints: {joints}")
                         self._robot.write_joints(joints, speed)
                     self._last_write_request = None
 
