@@ -19,7 +19,13 @@ def convert(input_dataset: Path, repo_id: str, fps: int, task: str) -> LeRobotDa
     )
 
     shuffled_renders = list(traj_dataset.renders)
+
+    # Deterministic shuffle
+    shuffled_renders.sort()
+    random.seed(1337)
     random.shuffle(shuffled_renders)
+
+    # Add all frames to the dataset
     for render in shuffled_renders:
         for timestep in render.timesteps:
             frame_dict = timestep.to_lerobot_frame_dict()
@@ -47,7 +53,7 @@ def main() -> None:
     )
     parser.add_argument("--task", type=str, help="Task name for the dataset.")
     parser.add_argument(
-        "-r", "--repo-id", type=Path, help="The 'user/dataset' huggingface repo id."
+        "-r", "--repo-id", type=str, help="The 'user/dataset' huggingface repo id."
     )
     parser.add_argument(
         "-u",
