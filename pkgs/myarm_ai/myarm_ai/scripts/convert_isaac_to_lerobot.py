@@ -1,3 +1,4 @@
+import logging
 import random
 from argparse import ArgumentParser
 from pathlib import Path
@@ -8,14 +9,11 @@ from myarm_ai.datasets import TrajectorySynthDatasetReader
 from myarm_ai.datasets.lerobot import DEFAULT_MYARM_FEATURES
 
 
-def convert(
-    input_dataset: Path, output_dir: Path, fps: int, task: str
-) -> LeRobotDataset:
+def convert(input_dataset: Path, repo_id: str, fps: int, task: str) -> LeRobotDataset:
     traj_dataset = TrajectorySynthDatasetReader(input_dataset)
 
     dataset = LeRobotDataset.create(
-        repo_id="pi_at_home",
-        root=output_dir,
+        repo_id=repo_id,
         fps=fps,
         features=DEFAULT_MYARM_FEATURES,
     )
@@ -49,16 +47,28 @@ def main() -> None:
     )
     parser.add_argument("--task", type=str, help="Task name for the dataset.")
     parser.add_argument(
-        "-o", "--output_dir", type=Path, help="Where to write the Lerobot dataset"
+        "-r", "--repo-id", type=Path, help="The 'user/dataset' huggingface repo id."
+    )
+    parser.add_argument(
+        "-u",
+        "--upload",
+        action="store_true",
+        default=False,
+        help="Upload the dataset to the huggingface dataset hub.",
     )
     args = parser.parse_args()
 
-    convert(
+    dataset = convert(
         input_dataset=args.episodes_dir,
-        output_dir=args.output_dir,
+        repo_id=args.repo_id,
         fps=args.fps,
         task=args.task,
     )
+
+    if args.upload:
+        dataset.push_to_hub()
+
+    logging.info(f"Dataset finished saving to {dataset.root}")
 
 
 if __name__ == "__main__":
