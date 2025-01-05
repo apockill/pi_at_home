@@ -39,8 +39,8 @@ factors.
         Done: [Now available via this fork of lerobot](https://github.com/huggingface/lerobot/pull/506)
   - [x] Create isaac -> lerobot conversion scripts
 - [ ] Validate synthetic data improves performance
-  - [ ] **In Progress**: Collect a synthetic data dataset for cube->basket task
-    - [x] **In Progress**: Create STL Assets for cube and basket
+  - [x] Collect a synthetic data dataset for cube->basket task
+    - [x] Create STL Assets for cube and basket
     - [x] Add randomization for position and scale of ground plane (and other objects too)
     - [x] Move main-scene to isaac_src/scenes/cube-cup-task.scene and set it up with 25 preset positions
     - [x] record myself moving the robot IRL, and compare to the simulation when rendered @ 30fps
@@ -55,12 +55,13 @@ factors.
     - [x] Record position of articulator in sim, not just real robot joints
     - [x] Fix bug with myarm firmware where there's a singularity at the 0 point
     - [x] Actually collect 50 samples
-    - [ ] Sanity check a few episodes in the Lerobot visualizer before uploading
-    - [ ] Upload and start training
+    - [x] Sanity check a few episodes in the Lerobot visualizer before uploading
+    - [x] Upload and start training
   - [x] Create a RobotProtocol that emulates latency and speed of my real robot
-  - [ ] Collect a small real dataset for cube->basket task
-  - [ ] Train a model on synthetic data, fine-tune on real data
-  - [x] Train a model on real data]
+  - [ ] **In Progress**: Collect a small real dataset for cube->basket task
+  - [ ] **In Progress**: Train a model on synthetic data, fine-tune on real data
+  - [ ] Add ability to run lerobot models in isaac sim + ROS2
+  - [ ] Train a model on real data]
   - [ ] Compare performance of model trained on synthetic data vs real data
 - [ ] Create & Document easy workflows for:
   - [ ] Record demonstrations with **real le[dirview.py](../../../../../dirview.py)ader arm** and **simulation follower arm**
