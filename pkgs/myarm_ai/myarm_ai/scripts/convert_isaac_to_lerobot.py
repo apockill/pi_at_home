@@ -21,7 +21,7 @@ def convert(input_dataset: Path, repo_id: str, fps: int, task: str) -> LeRobotDa
     shuffled_renders = list(traj_dataset.renders)
 
     # Deterministic shuffle
-    shuffled_renders.sort()
+    shuffled_renders.sort(key=lambda x: x.episode_json_path)
     random.seed(1337)
     random.shuffle(shuffled_renders)
 
