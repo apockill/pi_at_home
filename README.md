@@ -1,8 +1,6 @@
 # pi_at_home
 
 ---
-[![Test Status](https://github.com/apockill/pi_at_home/workflows/Test/badge.svg)](https://github.com/apockill/pi_at_home/actions?query=workflow%3ATest)
-[![Lint Status](https://github.com/apockill/pi_at_home/workflows/Lint/badge.svg)](https://github.com/apockill/pi_at_home/actions?query=workflow%3ALint)
 [![codecov](https://codecov.io/gh/apockill/pi_at_home/branch/main/graph/badge.svg)](https://codecov.io/gh/apockill/pi_at_home)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?logo=docker&logoColor=white)
@@ -15,6 +13,8 @@ and a place to create training data for reinforcement learning and imitation lea
 It's also the first project I've built using [create-ros-app](https://github.com/urbanmachine/create-ros-app),
 a template I'm developing to make it easier for anyone to create and deploy production 
 ready ROS2 applications.
+
+[Check out the large-scale synthetic dataset that's been generated with this project!](https://huggingface.co/spaces/lerobot/visualize_dataset?dataset=apockill%2Fmyarm-8-synthetic-cube-to-cup-large&episode=0)
 
 ## Project Roadmap
 ### Phase 1
