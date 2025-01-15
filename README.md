@@ -14,6 +14,8 @@ It's also the first project I've built using [create-ros-app](https://github.com
 a template I'm developing to make it easier for anyone to create and deploy production 
 ready ROS2 applications.
 
+[Check out the large-scale synthetic dataset that's been generated with this project!](https://huggingface.co/spaces/lerobot/visualize_dataset?dataset=apockill%2Fmyarm-8-synthetic-cube-to-cup-large&episode=0)
+
 ## Project Roadmap
 ### Phase 1
 Phase 1 focuses on leveraging imitation learning + synthetic data to improve the robustness
