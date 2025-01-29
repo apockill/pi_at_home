@@ -10,6 +10,11 @@
 This is my productionized deployment environment for my real world AI robot policies, 
 and a place to create training data for reinforcement learning and imitation learning.
 
+**Video Demo:**
+
+[![Video Demo of Project](https://img.youtube.com/vi/8K9TBExM6RE/0.jpg)](https://www.youtube.com/watch?v=8K9TBExM6RE)
+
+
 It's also the first project I've built using [create-ros-app](https://github.com/urbanmachine/create-ros-app),
 a template I'm developing to make it easier for anyone to create and deploy production 
 ready ROS2 applications.
