@@ -25,6 +25,8 @@ services:
       # This way you can save configuration files from GUI's like rviz right back to your source dir
       # LAUNCH_PROFILE is set in docker/_shared.sh
       - ./launch-profiles/${LAUNCH_PROFILE:- ''}:/robot/launch-profile
+      # Mount huggingface credentials
+      - "${VOLUMES_DIRECTORY}/ros-nodes/.huggingface_cache/:/root/.cache/huggingface/"
       # Necessary for display passthrough
       - "/tmp/.X11-unix:/tmp/.X11-unix:rw"
       # Necessary for PulseAudio passthrough

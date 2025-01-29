@@ -143,7 +143,7 @@ class TrajectoryRendererExtension(omni.ext.IExt):
                 next_render_number = path_utils.get_next_number_in_dir(
                     traj_recording.renders_dir, "render"
                 )
-                if next_render_number >= i:
+                if next_render_number > i + 1:
                     self.update_status(
                         f"Skipping episode {episode_number} in favor of other episodes."
                     )
