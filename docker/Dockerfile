@@ -77,7 +77,7 @@ RUN --mount=type=cache,target="${PIP_CACHE}" \
     pip3 install --break-system-packages "colcon-poetry-ros==${COLCON_POETRY_ROS_VERSION}"
 RUN curl -fsSL https://install.python-poetry.org --output /tmp/install-poetry.py \
     && POETRY_HOME=/usr/local python3 /tmp/install-poetry.py --version "${POETRY_VERSION}"
-RUN poetry self add poetry-plugin-bundle
+RUN poetry self add poetry-plugin-bundle@*
 
 # Add the ROS core setup script to the 'workspaces' command
 RUN add-workspace /opt/ros/${ROS2_DISTRO}/setup.bash
